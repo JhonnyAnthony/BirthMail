@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'venv', '.env')
 load_dotenv(dotenv_path)
 
+email_group = ['jhonny.souza@fgmdentalgroup.com']
 date = datetime.now()
 host = os.getenv("HOST")
 scope = os.getenv("SCOPE")

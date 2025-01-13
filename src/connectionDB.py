@@ -3,8 +3,11 @@ import os
 import logging
 from dotenv import load_dotenv
 from collections import namedtuple
+from datetime import datetime
+from senderMail import Mail
 
-# Carregar variáveis de ambiente
+
+# Load environment variables
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'venv', '.env')
 load_dotenv(dotenv_path)
 
@@ -13,7 +16,7 @@ class Database:
         self.connection = None
         self.cursor = None
 
-    def connect(self):
+    def connectData(self):
         dsn = {
             'host': os.getenv('host'),
             'port': os.getenv('port'),
@@ -21,19 +24,29 @@ class Database:
             'user': os.getenv('user'),
             'password': os.getenv('password')
         }
+        
+        # Check if environment variables are loaded
+        if None in dsn.values():
+            logging.error("Missing one or more environment variables.")
+            return
+        
         try:
             self.connection = oracledb.connect(
                 user=dsn['user'],
                 password=dsn['password'],
                 dsn=oracledb.makedsn(dsn['host'], dsn['port'], service_name=dsn['service_name'])
             )
-        except Exception as e:
-            logging.error("Erro ao estabelecer conexão: %s", e)
+            logging.info("Database connection established successfully.")
+        except oracledb.DatabaseError as e:
+            logging.error("Error establishing connection: %s", e)
 
     def query(self):
+        if self.connection is None:
+            logging.error("No database connection established.")
+            return []
+
         row_data_list = []
         try:
-            self.connect()
             self.cursor = self.connection.cursor()
             self.cursor.execute("""
                 SELECT
@@ -63,23 +76,21 @@ class Database:
                     R034FUN.NUMCAD = R034CPL.NUMCAD
                 WHERE
                     R034FUN.SITAFA = '1'
-                    AND R034FUN.TIPADM = '1'
+                AND
+                    R034FUN.TIPCOL = '1'
             """)
             RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
             rows = self.cursor.fetchall()
             for row in rows:
                 row_data_object = RowData(*row)
                 row_data_list.append(row_data_object)
-        except Exception as e:
-            logging.error("Erro ao executar a query: %s", e)
+            logging.info("Query executed successfully.")
+        except oracledb.DatabaseError as e:
+            logging.error("Error executing query: %s", e)
         finally:
             if self.cursor:
                 self.cursor.close()
             if self.connection:
                 self.connection.close()
+            logging.info("Database connection closed.")
         return row_data_list
-
-
-                
-                
-    

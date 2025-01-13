@@ -1,78 +1,80 @@
 import os
+import logging
 import json
 import logging
-import urllib3
 import requests
-from connectionDB import Database
+
 from datetime import datetime
-from config import client_secret,client_id,tenant_id,scope,email_from
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-db = Database()
-resultados = db.query()
+from connectionDB import Database
+from config import client_secret, client_id, tenant_id, scope, email_from
+
 class BithMail:
     def __init__(self):
-        self.service_ticket = None
-        self.key_password = None
-        self.id_code = None
-    
+        self.db = Database()
+        self.db.connectData()
+    @staticmethod
     def logs():
-        # Define the directory path where logs will be stored
-        log_directory = r"~/GitHub/BirthMail/Logs"
-            # Create the log directory if it doesn't exist
+        log_directory = r"C:/Scripts/BirthMail/Logs"
         if not os.path.exists(log_directory):
-                os.makedirs(log_directory)
+            os.makedirs(log_directory)
 
-            # Get the current date and time
         current_datetime = datetime.now()
-
-                # Generate a filename based on the current date within the log folder
         log_filename = os.path.join(log_directory, current_datetime.strftime("%Y-%m-%d") + "_log.log")
 
-                # Configure logging to output to this filename
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s %(levelname)s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
-            filename=log_filename  # Use the generated filename within the log folder
-        )           
-    
-    def filter():
+            filename=log_filename
+        )
+    logs()
+
+    def send_birthday_emails(self):
+        resultados = self.db.query()
+
         for resultado in resultados:
             tipoAdm = resultado.TIPADM #tipo adm???
             numeroEmp = resultado.NUMEMP #numero emp????
             tipoCol = resultado.TIPCOL # tipo col???
             nomeFun = resultado.NOMFUN # nume Completo
             sitaFa = resultado.SITAFA #situacao 
+            numCad= resultado.NUMCAD
             matricula = resultado.CODUSU #matricula
             dataNas = resultado.DATNAS #data nascimento
-            nomeUsuario = resultado.NOMUSU #usuario
             emailPessoal = resultado.EMAPAR #email pessoal
-            hoje = datetime.now()
-            # Verificar o tipo de dataNas
-            if isinstance(dataNas, datetime):
-                dataNass = dataNas
+            hoje = datetime.now().strftime("%d/%m")
+            self.nomeUsuario = resultado.NOMUSU #usuario
+            if not isinstance(dataNas, datetime):
+                dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
+            data_nascimento = dataNas.strftime("%d/%m")
+            # print(data_nascimento)
+            # if (data_nascimento == hoje):
+            #     print(data_nascimento,self.nomeUsuario)
+                # BithMail.sendMail(self)  
+            print(data_nascimento, numCad, self.nomeUsuario)    
             
-            else:
-                dataNass = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
-            # Formatar as datas
-            data_hoje = hoje.strftime("%d/%m")
-            data_nascimento = dataNass.strftime("%d/%m")
-            if (data_nascimento == data_hoje):
-                start.sendMail()
-            else:
-                logging.info("Não tem ninguem de aniversário hoje")
-        
+        return self.nomeUsuario
+
     def sendMail(self):
-        email_group = ['jhonny.souza@fgmdentalgroup.com']
-        #email_group = ['guest@fgm.ind.br','infra@fgm.ind.br']
-        
-        subject = 'Hoje é o seu Aniversário - Parabéns!'
+        # email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com"]
+        email_group = [f"jhonny.souza@fgmdentalgroup.com"]
+
+        # subject = 'TESTE'
+        # body = f"""
+        #         <html>
+        #             <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+        #             <a href="https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html" style="display: flex; justify-content: center; align-items: center;">
+        #                 <img src="https://i.imgur.com/klRdWw6.png" alt="ImageBirth">
+        #             </a>
+        #         </html>
+        #         """
+        subject = 'TESTE'
+
         body = f"""
                 <html>
                     <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
-                    <a href="https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html" style="display: flex; justify-content: center; align-items: center;">
-                        <img src="https://i.imgur.com/klRdWw6.png" alt="ImageBirth">
-                    </a>
+                        <h1>teste</h1>
+                    </body>
                 </html>
                 """
 
@@ -110,12 +112,13 @@ class BithMail:
         response = requests.post(url, headers=headers, data=json.dumps(email_msg))
         print(response.text)
         if response.status_code == 202:
-            logging.info(f"Enviado e-mail para{email_group}")
+            logging.info(f"Enviado e-mail para {email_group}")
         else:
-            logging.error(f'Falha ao enviar email: {response.status_code}: {response.text}')   
-        
-
+            logging.error(f'Falha ao enviar email: {response.status_code}: {response.text}')
 
 if __name__ == "__main__":
-    start = BithMail()
-    
+    main = BithMail()
+    main.send_birthday_emails()
+    start = Database()
+    start.connectData()
+    start.query()
