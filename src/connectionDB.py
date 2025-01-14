@@ -62,15 +62,15 @@ class Database:
                     R034CPL.EMAPAR AS EMAPAR
                 FROM
                     SENIOR.R034FUN
-                LEFT JOIN
+                INNER JOIN
                     SENIOR.R034USU
                 ON
                     R034FUN.NUMCAD = R034USU.NUMCAD
-                LEFT JOIN
+                INNER JOIN
                     SENIOR.R999USU
                 ON
                     R034USU.CODUSU = R999USU.CODUSU
-                LEFT JOIN
+                INNER JOIN
                     SENIOR.R034CPL
                 ON
                     R034FUN.NUMCAD = R034CPL.NUMCAD

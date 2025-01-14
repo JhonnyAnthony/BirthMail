@@ -31,52 +31,57 @@ class BithMail:
 
     def send_birthday_emails(self):
         resultados = self.db.query()
+        seen = set()  # Conjunto para rastrear nomes de usuários únicos
 
         for resultado in resultados:
-            tipoAdm = resultado.TIPADM #tipo adm???
-            numeroEmp = resultado.NUMEMP #numero emp????
-            tipoCol = resultado.TIPCOL # tipo col???
-            nomeFun = resultado.NOMFUN # nume Completo
-            sitaFa = resultado.SITAFA #situacao 
-            numCad= resultado.NUMCAD
-            matricula = resultado.CODUSU #matricula
-            dataNas = resultado.DATNAS #data nascimento
-            emailPessoal = resultado.EMAPAR #email pessoal
+            tipoAdm = resultado.TIPADM
+            numeroEmp = resultado.NUMEMP
+            tipoCol = resultado.TIPCOL
+            nomeFun = resultado.NOMFUN
+            self.nomeCompleto = nomeFun.title()
+            sitaFa = resultado.SITAFA
+            numCad = resultado.NUMCAD
+            matricula = resultado.CODUSU
+            dataNas = resultado.DATNAS
+            self.emailPessoal = resultado.EMAPAR
             hoje = datetime.now().strftime("%d/%m")
-            self.nomeUsuario = resultado.NOMUSU #usuario
+            self.nomeUsuario = resultado.NOMUSU
+
             if not isinstance(dataNas, datetime):
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
             data_nascimento = dataNas.strftime("%d/%m")
-            # print(data_nascimento)
-            # if (data_nascimento == hoje):
-            #     print(data_nascimento,self.nomeUsuario)
-                # BithMail.sendMail(self)  
-            print(data_nascimento, numCad, self.nomeUsuario)    
-            
-        return self.nomeUsuario
+# 
+            if (data_nascimento == '01/07' and self.nomeUsuario=='jhonny.souza'):
+                if (self.nomeUsuario not in seen):# if para nao duplicar nomes
+                    seen.add(self.nomeUsuario)
+                    print(data_nascimento,self.nomeUsuario,self.emailPessoal)
+                    BithMail.sendMail(self)  
+            # print(data_nascimento, numCad, self.nomeUsuario,self.emailPessoal)  
+                
+        return self.nomeUsuario,self.emailPessoal,self.nomeCompleto
 
     def sendMail(self):
-        # email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com"]
-        email_group = [f"jhonny.souza@fgmdentalgroup.com"]
+        email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}']
+        # email_group = [f"jhonny.souza@fgmdentalgroup.com"] 
 
+        subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
+        body = f"""
+                <html>
+                    <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;size=100%">
+                    <a href="https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html" style="display: flex; justify-content: center; align-items: center;">
+                        <img src="https://i.imgur.com/klRdWw6.png" alt="ImageBirth"><br>
+                    </a>
+                </html>
+                """
         # subject = 'TESTE'
+
         # body = f"""
         #         <html>
         #             <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
-        #             <a href="https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html" style="display: flex; justify-content: center; align-items: center;">
-        #                 <img src="https://i.imgur.com/klRdWw6.png" alt="ImageBirth">
-        #             </a>
+        #                 <h1>teste</h1>
+        #             </body>
         #         </html>
         #         """
-        subject = 'TESTE'
-
-        body = f"""
-                <html>
-                    <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
-                        <h1>teste</h1>
-                    </body>
-                </html>
-                """
 
         # Obter token de acesso
         url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
