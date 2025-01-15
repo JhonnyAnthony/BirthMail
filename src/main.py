@@ -1,9 +1,7 @@
 import os
-import logging
 import json
 import logging
 import requests
-
 from datetime import datetime
 from connectionDB import Database
 from config import client_secret, client_id, tenant_id, scope, email_from
@@ -37,11 +35,11 @@ class BithMail:
             tipoAdm = resultado.TIPADM
             numeroEmp = resultado.NUMEMP
             tipoCol = resultado.TIPCOL
-            nomeFun = resultado.NOMFUN
-            self.nomeCompleto = nomeFun.title()
             sitaFa = resultado.SITAFA
             numCad = resultado.NUMCAD
             matricula = resultado.CODUSU
+            nomeFun = resultado.NOMFUN
+            self.nomeCompleto = nomeFun.title()
             dataNas = resultado.DATNAS
             self.emailPessoal = resultado.EMAPAR
             hoje = datetime.now().strftime("%d/%m")
@@ -51,11 +49,13 @@ class BithMail:
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
             data_nascimento = dataNas.strftime("%d/%m")
 # 
-            if (data_nascimento == '01/07' and self.nomeUsuario=='jhonny.souza'):
-                if (self.nomeUsuario not in seen):# if para nao duplicar nomes
+            if (data_nascimento == hoje):
+            # if (self.nomeUsuario =='jhonny.souza'):
+                if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# if para nao duplicar nomes
                     seen.add(self.nomeUsuario)
-                    print(data_nascimento,self.nomeUsuario,self.emailPessoal)
-                    BithMail.sendMail(self)  
+                    # seen.add(self.emailPessoal)
+                    print(data_nascimento,self.nomeUsuario,self.emailPessoal,numCad)
+                    # BithMail.sendMail(self)  # Chama a funcao do envio do email
             # print(data_nascimento, numCad, self.nomeUsuario,self.emailPessoal)  
                 
         return self.nomeUsuario,self.emailPessoal,self.nomeCompleto
@@ -65,12 +65,15 @@ class BithMail:
         # email_group = [f"jhonny.souza@fgmdentalgroup.com"] 
 
         subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
+        picture = 'https://fgmdentalgroup.com/wp-content/uploads/2025/01/aniversario-1.jpg'
+        linkRedirect= 'https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html'
         body = f"""
                 <html>
-                    <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;size=100%">
-                    <a href="https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html" style="display: flex; justify-content: center; align-items: center;">
-                        <img src="https://i.imgur.com/klRdWw6.png" alt="ImageBirth"><br>
-                    </a>
+                    <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+                        <a href="{linkRedirect}" style="display: flex; justify-content: center; align-items: center;">
+                            <img src="{picture}" alt="ImageBirth"><br>
+                        </a>
+                    </body>
                 </html>
                 """
         # subject = 'TESTE'
