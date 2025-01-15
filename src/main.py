@@ -49,8 +49,8 @@ class BithMail:
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
             data_nascimento = dataNas.strftime("%d/%m")
 # 
-            # if (data_nascimento == hoje):
-            if (data_nascimento == '01/07'and self.nomeUsuario=='jhonny.souza'):
+            if (data_nascimento == hoje):
+            # if (self.nomeUsuario=='gabriel.natan' or self.nomeUsuario=='adriano.guerra' or self.nomeUsuario=='jhonny.souza'):
                 if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# if para nao duplicar nomes
                     seen.add(self.nomeUsuario)
                     # seen.add(self.emailPessoal)

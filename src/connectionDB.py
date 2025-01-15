@@ -3,8 +3,6 @@ import os
 import logging
 from dotenv import load_dotenv
 from collections import namedtuple
-from datetime import datetime
-from senderMail import Mail
 
 
 # Load environment variables
