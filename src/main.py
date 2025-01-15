@@ -12,7 +12,7 @@ class BithMail:
         self.db.connectData()
     @staticmethod
     def logs():
-        log_directory = r"C:/Scripts/BirthMail/Logs"
+        log_directory = r"/home/fgm/Scripts/BirthMail/Logs"
         if not os.path.exists(log_directory):
             os.makedirs(log_directory)
 
@@ -50,12 +50,12 @@ class BithMail:
             data_nascimento = dataNas.strftime("%d/%m")
 # 
             # if (data_nascimento == hoje):
-            if (data_nascimento == '14/01'):
+            if (data_nascimento == '01/07'and self.nomeUsuario=='jhonny.souza'):
                 if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# if para nao duplicar nomes
                     seen.add(self.nomeUsuario)
                     # seen.add(self.emailPessoal)
                     print(data_nascimento,self.nomeUsuario,self.emailPessoal,numCad)
-                    # BithMail.sendMail(self)  # Chama a funcao do envio do email
+                    BithMail.sendMail(self)  # Chama a funcao do envio do email
             # print(data_nascimento, numCad, self.nomeUsuario,self.emailPessoal)  
                 
         return self.nomeUsuario,self.emailPessoal,self.nomeCompleto
@@ -69,9 +69,10 @@ class BithMail:
         linkRedirect= 'https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html'
         body = f"""
                 <html>
+                    <br>
                     <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
                         <a href="{linkRedirect}" style="display: flex; justify-content: center; align-items: center;">
-                            <img src="{picture}" alt="ImageBirth"><br>
+                            <img src="{picture}" alt="ImageBirth">
                         </a>
                     </body>
                 </html>

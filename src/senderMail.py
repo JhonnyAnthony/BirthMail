@@ -13,6 +13,7 @@ class Mail:
                     <a href="https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html" style="display: flex; justify-content: center; align-items: center;">
                         <img src="https://i.imgur.com/klRdWw6.png" alt="ImageBirth">
                     </a>
+                    </body>
                 </html>
                 """
 
