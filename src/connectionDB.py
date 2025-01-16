@@ -1,35 +1,25 @@
 import oracledb
-import os
 import logging
-from dotenv import load_dotenv
 from collections import namedtuple
-from datetime import datetime
-from senderMail import Mail
-
-
-# Load environment variables
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'venv', '.env')
-load_dotenv(dotenv_path)
+from config import host_data, port_data, service_name_data,user_data,password_data
 
 class Database:
     def __init__(self):
-        self.connection = None
-        self.cursor = None
-
+        self.connection = None #Declara conexão como None
+        self.cursor = None     #Declara cursor como None
     def connectData(self):
         dsn = {
-            'host': os.getenv('host'),
-            'port': os.getenv('port'),
-            'service_name': os.getenv('service_name'),
-            'user': os.getenv('user'),
-            'password': os.getenv('password')
+            f'host': host_data,
+            'port': port_data,
+            'service_name': service_name_data,
+            'user': user_data,
+            'password': password_data
         }
         
         # Check if environment variables are loaded
         if None in dsn.values():
             logging.error("Missing one or more environment variables.")
             return
-        
         try:
             self.connection = oracledb.connect(
                 user=dsn['user'],
@@ -44,7 +34,6 @@ class Database:
         if self.connection is None:
             logging.error("No database connection established.")
             return []
-
         row_data_list = []
         try:
             self.cursor = self.connection.cursor()
