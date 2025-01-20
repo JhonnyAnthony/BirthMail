@@ -4,7 +4,7 @@ import logging
 import requests
 from datetime import datetime
 from connectionDB import Database
-from config import client_secret, client_id, tenant_id, scope, email_from
+from config import client_secret, client_id, tenant_id, scope, email_from,picture,linkRedirect
 
 class BithMail:
     def __init__(self):
@@ -12,12 +12,12 @@ class BithMail:
         self.db.connectData()
     @staticmethod
     def logs():
-        log_directory = r"/home/fgm/Scripts/BirthMail/Logs"
+        log_directory = r"/home/fgm/Scripts/BirthMail/Logs" #path para ser colocado as Logs
         if not os.path.exists(log_directory):
-            os.makedirs(log_directory)
+            os.makedirs(log_directory) #caso o path nao exista ele vai criar
 
-        current_datetime = datetime.now()
-        log_filename = os.path.join(log_directory, current_datetime.strftime("%Y-%m-%d") + "_log.log")
+        current_datetime = datetime.now() #data de hoje
+        log_filename = os.path.join(log_directory, current_datetime.strftime("%Y-%m-%d") + "_log.log") #declara o nome do arquivo log
 
         logging.basicConfig(
             level=logging.INFO,
@@ -32,11 +32,6 @@ class BithMail:
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         count = 0
         for resultado in resultados: #Loop para verificar todos os Usuários
-            
-            # tipoAdm = resultado.TIPADM                #NÃO UTILIZADO
-            # numeroEmp = resultado.NUMEMP              #NÃO UTILIZADO
-            # tipoCol = resultado.TIPCOL                #NÃO UTILIZADO
-            # sitaFa = resultado.SITAFA                 #NÃO UTILIZADO
             numCad = resultado.NUMCAD                   #Armazenamento da Matricula
             nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
             self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
@@ -44,30 +39,26 @@ class BithMail:
             email = resultado.EMAPAR        #Armazenamento do E-mail do Usuário
             self.emailPessoal = email.lower()
             self.nomeUsuario = resultado.NOMUSU         #Armazenamento do Usuário de E-mail.
-            hoje = datetime.now().strftime("%d/%m")     #Armazenamento da Data do Dia
             if not isinstance(dataNas, datetime):       #Situação para poder mudar a tipagem da data
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")   #Armazenamento de dado para Conversão
+            hoje = datetime.now().strftime("%d/%m")     #Armazenamento da Data do Dia
             self.data_nascimento = dataNas.strftime("%d/%m") #Armazenamento de Data de Nascimento pós Conversão
             # if (self.data_nascimento == hoje):              #Situação quando Data Nascimento é IGUAL Data do Dia
-            if (self.emailPessoal == ' '):
+            if (self.emailPessoal == ' '): #Validação de emails pessoais vazios.
                 self.emailPessoal = ''
             # if (self.data_nascimento == '01/01' or self.data_nascimento=='02/01'or self.data_nascimento=='03/01'or self.data_nascimento=='04/01'or self.data_nascimento=='05/01'or self.data_nascimento=='06/01'or self.data_nascimento=='07/01'or self.data_nascimento=='08/01'or self.data_nascimento=='09/01'or self.data_nascimento=='10/01'or self.data_nascimento=='11/01'or self.data_nascimento=='12/01'or self.data_nascimento=='13/01'or self.data_nascimento=='14/01'or self.data_nascimento=='15/01'or self.data_nascimento=='16/01'or self.data_nascimento=='17/01'or self.data_nascimento=='18/01'or self.data_nascimento=='19/01'): #TESTE
             if(self.data_nascimento == hoje): 
                 if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# Situação para não duplicar nomesor
                     count += 1
                     seen.add(self.nomeUsuario) #Adiciona nome aos dados "Vistos"
-                    print(self.data_nascimento,self.nomeUsuario,self.emailPessoal,numCad,count) #Print de Retorno de dados
-                    # BithMail.sendMail(self)  # Chama a funcao do envio do email   
-            # print(self.nomeCompleto,numCad)
+                    print(f"Data: {self.data_nascimento},{self.nomeUsuario} Contagem = {count}") #Print de Retorno de dados
+                    BithMail.sendMail(self)  # Chama a funcao do envio do email   
         return self.nomeUsuario,self.emailPessoal,self.nomeCompleto,self.data_nascimento # Retorno de dados
 
     def sendMail(self): #Faz envio do E-mail
-        # email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
-        email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
-
-        subject = f'Seu aniversário foi dia {self.data_nascimento}, Parabéns {self.nomeCompleto}!' #Titulo do E-mail
-        picture = 'https://fgmdentalgroup.com/wp-content/uploads/2025/01/aniversario-1.jpg' #Armazena a imagem do E-mail
-        linkRedirect= 'https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html'      #Armazena o link de redirecionamento da Imagem
+        email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
+        # email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
+        subject = f'Hoje é o seu Aniversário, Parabéns {self.nomeCompleto}!' #Titulo do E-mail
         #Corpo do E-mail 
         body = f"""                                                                         
                 <html>
@@ -89,10 +80,8 @@ class BithMail:
         }
         response = requests.post(url, data=data) #Armazenamento da situação da API
         token = response.json().get('access_token') #Armazena o Acess token
-
         # Preparar lista de destinatários
         to_recipients = [{'emailAddress': {'address': email}} for email in email_group]
-
         # Enviar email
         url = f'https://graph.microsoft.com/v1.0/users/{email_from}/sendMail' #End-Point de envio de e-mail
         headers = { #Dados de vericação e autorização da API
