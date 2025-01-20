@@ -30,8 +30,9 @@ class BithMail:
     def send_birthday_emails(self):
         resultados = self.db.query() #Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
-
+        count = 0
         for resultado in resultados: #Loop para verificar todos os Usuários
+            
             # tipoAdm = resultado.TIPADM                #NÃO UTILIZADO
             # numeroEmp = resultado.NUMEMP              #NÃO UTILIZADO
             # tipoCol = resultado.TIPCOL                #NÃO UTILIZADO
@@ -40,26 +41,31 @@ class BithMail:
             nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
             self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
             dataNas = resultado.DATNAS                  #Armazenamento da Data de Nascimento
-            self.emailPessoal = resultado.EMAPAR        #Armazenamento do E-mail do Usuário
+            email = resultado.EMAPAR        #Armazenamento do E-mail do Usuário
+            self.emailPessoal = email.lower()
             self.nomeUsuario = resultado.NOMUSU         #Armazenamento do Usuário de E-mail.
             hoje = datetime.now().strftime("%d/%m")     #Armazenamento da Data do Dia
             if not isinstance(dataNas, datetime):       #Situação para poder mudar a tipagem da data
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")   #Armazenamento de dado para Conversão
-            data_nascimento = dataNas.strftime("%d/%m") #Armazenamento de Data de Nascimento pós Conversão
-# 
-            if (data_nascimento == hoje):               #Situação quando Data Nascimento é IGUAL Data do Dia
-            # if (self.nomeUsuario=='gabriel.natan' or self.nomeUsuario=='adriano.guerra' or self.nomeUsuario=='jhonny.souza'): #TESTE
-                if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# Situação para não duplicar nomes
+            self.data_nascimento = dataNas.strftime("%d/%m") #Armazenamento de Data de Nascimento pós Conversão
+            # if (self.data_nascimento == hoje):              #Situação quando Data Nascimento é IGUAL Data do Dia
+            if (self.emailPessoal == ' '):
+                self.emailPessoal = ''
+            # if (self.data_nascimento == '01/01' or self.data_nascimento=='02/01'or self.data_nascimento=='03/01'or self.data_nascimento=='04/01'or self.data_nascimento=='05/01'or self.data_nascimento=='06/01'or self.data_nascimento=='07/01'or self.data_nascimento=='08/01'or self.data_nascimento=='09/01'or self.data_nascimento=='10/01'or self.data_nascimento=='11/01'or self.data_nascimento=='12/01'or self.data_nascimento=='13/01'or self.data_nascimento=='14/01'or self.data_nascimento=='15/01'or self.data_nascimento=='16/01'or self.data_nascimento=='17/01'or self.data_nascimento=='18/01'or self.data_nascimento=='19/01'): #TESTE
+            if(self.data_nascimento == hoje): 
+                if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# Situação para não duplicar nomesor
+                    count += 1
                     seen.add(self.nomeUsuario) #Adiciona nome aos dados "Vistos"
-                    print(data_nascimento,self.nomeUsuario,self.emailPessoal,numCad) #Print de Retorno de dados
+                    print(self.data_nascimento,self.nomeUsuario,self.emailPessoal,numCad,count) #Print de Retorno de dados
                     # BithMail.sendMail(self)  # Chama a funcao do envio do email   
-        return self.nomeUsuario,self.emailPessoal,self.nomeCompleto # Retorno de dados
+            # print(self.nomeCompleto,numCad)
+        return self.nomeUsuario,self.emailPessoal,self.nomeCompleto,self.data_nascimento # Retorno de dados
 
     def sendMail(self): #Faz envio do E-mail
-        email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
-        # email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
+        # email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
+        email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
 
-        subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!' #Titulo do E-mail
+        subject = f'Seu aniversário foi dia {self.data_nascimento}, Parabéns {self.nomeCompleto}!' #Titulo do E-mail
         picture = 'https://fgmdentalgroup.com/wp-content/uploads/2025/01/aniversario-1.jpg' #Armazena a imagem do E-mail
         linkRedirect= 'https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html'      #Armazena o link de redirecionamento da Imagem
         #Corpo do E-mail 
