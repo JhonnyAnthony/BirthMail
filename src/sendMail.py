@@ -13,8 +13,12 @@ class SendMail:
         resultados = self.db.query() #Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados: #Loop para verificar todos os Usuários
+            nomeSuperior = resultado.NOMESUP
             nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
-            self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
+            if nomeSuperior and nomeFun:
+                self.nomeSup = nomeSuperior.title()
+                self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
+            # userSup = resultado.USERSUP
             numCad = resultado.NUMCAD                   #Armazenamento da Matricula
             dataNas = resultado.DATNAS                  #Armazenamento da Data de Nascimento
             self.emailPessoal = resultado.EMAPAR        #Armazenamento do E-mail do Usuário
@@ -24,11 +28,11 @@ class SendMail:
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")   #Armazenamento de dado para Conversão
             data_nascimento = dataNas.strftime("%d/%m") #Armazenamento de Data de Nascimento pós Conversão
             email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
-            if (data_nascimento == hoje):               #Situação quando Data Nascimento é IGUAL Data do Dia
-            # if (self.nomeUsuario=='jhonny.souza'): #TESTE
+            # if (data_nascimento == hoje):               #Situação quando Data Nascimento é IGUAL Data do Dia
+            if (self.nomeUsuario=='jhonny.souza'): #TESTE
                 if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# Situação para não duplicar nomes
                     seen.add(self.nomeUsuario) #Adiciona nome aos dados "Vistos"
-                    print(data_nascimento,self.nomeUsuario,self.emailPessoal,numCad) #Print de Retorno de dados
+                    print(data_nascimento,self.nomeUsuario,self.emailPessoal,numCad,self.nomeSup) #Print de Retorno de dados
                     # SendMail.sendMail(self)  # Chama a funcao do envio do email   
         return email_corporativo,self.nomeUsuario,self.emailPessoal,self.nomeCompleto,data_nascimento,hoje # Retorno de dados
     def sendMail(self): #Faz envio do E-mail
@@ -87,4 +91,3 @@ class SendMail:
 if __name__ == "__main__":
     start = SendMail()
     send = start.send_birthday_emails()
-    send2 = start.sendMail()
