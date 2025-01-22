@@ -1,32 +1,32 @@
-import os
-import json
-import logging
-import requests
 from datetime import datetime
-from connectionDB import Database
 from config import client_secret, client_id, tenant_id, scope, email_from
+import requests
+import logging
+import json
+class SendMail:
+    def send_birthday_emails(self):
+        resultados = self.db.query() #Armazena dados dos Usuários
+        seen = set()  # Conjunto para rastrear nomes de usuários únicos
 
-class BithMail:
-    def __init__(self):
-        self.db = Database()
-        self.db.connectData()
-    @staticmethod
-    def logs():
-        log_directory = r"/home/fgm/Scripts/BirthMail/Logs"
-        if not os.path.exists(log_directory):
-            os.makedirs(log_directory)
-
-        current_datetime = datetime.now()
-        log_filename = os.path.join(log_directory, current_datetime.strftime("%Y-%m-%d") + "_log.log")
-
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s %(levelname)s %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            filename=log_filename
-        )
-    logs()
-
+        for resultado in resultados: #Loop para verificar todos os Usuários
+            nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
+            self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
+            numCad = resultado.NUMCAD                   #Armazenamento da Matricula
+            dataNas = resultado.DATNAS                  #Armazenamento da Data de Nascimento
+            self.emailPessoal = resultado.EMAPAR        #Armazenamento do E-mail do Usuário
+            self.nomeUsuario = resultado.NOMUSU         #Armazenamento do Usuário de E-mail.
+            hoje = datetime.now().strftime("%d/%m")     #Armazenamento da Data do Dia
+            if not isinstance(dataNas, datetime):       #Situação para poder mudar a tipagem da data
+                dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")   #Armazenamento de dado para Conversão
+            data_nascimento = dataNas.strftime("%d/%m") #Armazenamento de Data de Nascimento pós Conversão
+# 
+            if (data_nascimento == hoje):               #Situação quando Data Nascimento é IGUAL Data do Dia
+            # if (self.nomeUsuario=='jhonny.souza'): #TESTE
+                if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# Situação para não duplicar nomes
+                    seen.add(self.nomeUsuario) #Adiciona nome aos dados "Vistos"
+                    print(data_nascimento,self.nomeUsuario,self.emailPessoal,numCad) #Print de Retorno de dados
+                    SendMail.sendMail(self)  # Chama a funcao do envio do email   
+        return self.nomeUsuario,self.emailPessoal,self.nomeCompleto,data_nascimento,hoje # Retorno de dados
     def sendMail(self): #Faz envio do E-mail
         email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
         # email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
@@ -80,10 +80,3 @@ class BithMail:
             logging.info(f"Enviado e-mail para {email_group}")
         else:
             logging.error(f'Falha ao enviar email: {response.status_code}: {response.text}')
-
-if __name__ == "__main__": #Inicia o Projeto
-    main = BithMail()
-    main.send_birthday_emails()
-    start = Database()
-    start.connectData()
-    start.query()

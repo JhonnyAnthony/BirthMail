@@ -39,98 +39,59 @@ class Database:
             self.cursor = self.connection.cursor()
             self.cursor.execute("""
                 SELECT
-                    ROWNUM AS linha, 
-                    FUN.SITAFA as SITAFA, -- Situação
-                    FUN.TIPADM as TIPADM, -- Tipo
-                    FUN.NUMCAD as NUMCAD, -- Matricula
-                    FUN.DATADM as DATADM, -- Data Admissão
-                    FUN.DATNAS as DATNAS, -- Data Nascimento
-                    FUN.NOMFUN as NOMFUN, -- Nome completo
-                    EM.EMAPAR as EMAPAR,  -- Email pessoal
-                    USU.NOMUSU as NOMUSU, -- Usuario 
-                    FUN.CODCAR as CODCAR, -- Codigo cargo
-                    CAR.TITCAR as TITCAR, -- Cargo
-                    ORN.NOMLOC as NOMLOC, -- Setor
-                    PHO.FOTEMP as FOTEMP, -- Foto
-                    FUN.POSTRA as POSTRA, -- Posto
-                (
-                        SELECT Z.POSTRA
-                        FROM senior.R017HIE Z
-                        WHERE Z.ESTPOS = FUN.ESTPOS
-                        AND ROWNUM <= 1
-                        AND Z.POSPOS = (
-                            SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS) - 2)
-                            FROM senior.R017HIE HIE
-                            WHERE HIE.ESTPOS = FUN.ESTPOS
-                            AND HIE.POSTRA = FUN.POSTRA
-                            AND ROWNUM <= 1
-                        )
-                    ) AS POSTRA_CHE,
-                    (
-                        SELECT USU.NOMUSU
-                        FROM senior.R034FUN K
-                        LEFT JOIN senior.R034USU FUS ON K.NUMEMP = FUS.NUMEMP
-                        AND K.TIPCOL = FUS.TIPCOL
-                        AND K.NUMCAD = FUS.NUMCAD
-                        LEFT JOIN senior.R999USU USU ON FUS.CODUSU = USU.CODUSU
-                        WHERE ROWNUM = 1
-                        AND K.ESTPOS = FUN.ESTPOS
-                        AND K.POSTRA = (
-                            SELECT Z.POSTRA
-                            FROM senior.R017HIE Z
-                            WHERE Z.ESTPOS = FUN.ESTPOS
-                            AND ROWNUM = 1
-                            AND Z.POSPOS = (
-                                SELECT SUBSTR(POSPOS, 1, LENGTH(POSPOS) - 2)
-                                FROM senior.R017HIE HIE
-                                WHERE HIE.ESTPOS = FUN.ESTPOS
-                                AND HIE.POSTRA = FUN.POSTRA
-                                AND ROWNUM = 1
-                            )
-                        )
-                    ) AS USUSUP, -- Usuário Sup
-                    (
-                        SELECT K.NOMFUN
-                        FROM senior.R034FUN K
-                        LEFT JOIN senior.R034USU FUS ON K.NUMEMP = FUS.NUMEMP
-                        AND K.TIPCOL = FUS.TIPCOL
-                        AND K.NUMCAD = FUS.NUMCAD
-                        LEFT JOIN senior.R999USU USU ON FUS.CODUSU = USU.CODUSU
-                        WHERE ROWNUM = 1
-                        AND K.ESTPOS = FUN.ESTPOS
-                        AND K.POSTRA = (
-                            SELECT Z.POSTRA
-                            FROM senior.R017HIE Z
-                            WHERE Z.ESTPOS = FUN.ESTPOS
-                            AND ROWNUM = 1
-                            AND Z.POSPOS = (
-                                SELECT SUBSTR(POSPOS, 1, LENGTH(POSPOS) - 2)
-                                FROM senior.R017HIE HIE
-                                WHERE HIE.ESTPOS = FUN.ESTPOS
-                                AND HIE.POSTRA = FUN.POSTRA
-                                AND ROWNUM = 1
-                            )
-                        )
-                    ) AS NOMSUP -- Nome completo Sup
+                    ROWNUM AS linha,
+                    FUN.SITAFA AS SITAFA,
+                    -- Situação
+                    FUN.TIPADM AS TIPADM,
+                    -- Tipo
+                    FUN.NUMCAD AS NUMCAD,
+                    -- Matrícula
+                    FUN.DATADM AS DATADM,
+                    -- Data Admissão
+                    FUN.DATNAS AS DATNAS,
+                    -- Data Nascimento
+                    FUN.NOMFUN AS NOMFUN,
+                    -- Nome completo
+                    EM.EMAPAR AS EMAPAR,
+                    -- Email pessoal
+                    USU.NOMUSU AS NOMUSU,
+                    -- Usuário 
+                    FUN.CODCAR AS CODCAR,
+                    -- Código cargo
+                    CAR.TITCAR AS TITCAR,
+                    -- Cargo
+                    ORN.NOMLOC AS NOMLOC,
+                    -- Setor
+                    FUN.POSTRA AS POSTRA
+                    -- Posto
                 FROM
                     senior.R034FUN FUN
-                    INNER JOIN senior.R030EMP EMP ON FUN.NUMEMP = EMP.NUMEMP
-                    INNER JOIN senior.R024CAR CAR ON FUN.CODCAR = CAR.CODCAR
+                INNER JOIN senior.R030EMP EMP ON
+                    FUN.NUMEMP = EMP.NUMEMP
+                INNER JOIN senior.R024CAR CAR ON
+                    FUN.CODCAR = CAR.CODCAR
                     AND FUN.ESTCAR = CAR.ESTCAR
-                    INNER JOIN senior.R034CPL EM ON FUN.NUMCAD = EM.NUMCAD
-                    INNER JOIN senior.R016ORN ORN ON ORN.NUMLOC = FUN.NUMLOC
-                    INNER JOIN senior.R030FIL FIL ON FUN.CODFIL = FIL.CODFIL
+                INNER JOIN senior.R034CPL EM ON
+                    FUN.NUMCAD = EM.NUMCAD
+                INNER JOIN senior.R016ORN ORN ON
+                    ORN.NUMLOC = FUN.NUMLOC
+                INNER JOIN senior.R030FIL FIL ON
+                    FUN.CODFIL = FIL.CODFIL
                     AND FUN.NUMEMP = FIL.NUMEMP
-                    LEFT JOIN senior.R034USU FUS ON FUN.NUMEMP = FUS.NUMEMP
+                LEFT JOIN senior.R034USU FUS ON
+                    FUN.NUMEMP = FUS.NUMEMP
                     AND FUN.TIPCOL = FUS.TIPCOL
                     AND FUN.NUMCAD = FUS.NUMCAD
-                    LEFT JOIN senior.R999USU USU ON FUS.CODUSU = USU.CODUSU
-                    LEFT JOIN senior.R034FOT PHO ON FUN.NUMCAD = PHO.NUMCAD
+                LEFT JOIN senior.R999USU USU ON
+                    FUS.CODUSU = USU.CODUSU
+                LEFT JOIN senior.R034FOT PHO ON
+                    FUN.NUMCAD = PHO.NUMCAD
                     AND FUN.TIPCOL = PHO.TIPCOL
                     AND FUN.NUMEMP = PHO.NUMEMP
                 WHERE
-                    FUN.SITAFA = '1'AND
-                    FUN.TIPADM = '1'
+                    FUN.SITAFA = '1'
+                    AND FUN.TIPADM = '1'
+
 
             """)
             RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
