@@ -1,13 +1,17 @@
 from datetime import datetime
+from connectionDB import Database
 from config import client_secret, client_id, tenant_id, scope, email_from
 import requests
 import logging
 import json
 class SendMail:
+    def __init__(self):
+        self.db = Database()
+        self.db.connectData()
+
     def send_birthday_emails(self):
         resultados = self.db.query() #Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
-
         for resultado in resultados: #Loop para verificar todos os Usuários
             nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
             self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
@@ -19,17 +23,17 @@ class SendMail:
             if not isinstance(dataNas, datetime):       #Situação para poder mudar a tipagem da data
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")   #Armazenamento de dado para Conversão
             data_nascimento = dataNas.strftime("%d/%m") #Armazenamento de Data de Nascimento pós Conversão
-# 
+            email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
             if (data_nascimento == hoje):               #Situação quando Data Nascimento é IGUAL Data do Dia
             # if (self.nomeUsuario=='jhonny.souza'): #TESTE
                 if (self.nomeUsuario not in seen and self.emailPessoal != ' '):# Situação para não duplicar nomes
                     seen.add(self.nomeUsuario) #Adiciona nome aos dados "Vistos"
                     print(data_nascimento,self.nomeUsuario,self.emailPessoal,numCad) #Print de Retorno de dados
-                    SendMail.sendMail(self)  # Chama a funcao do envio do email   
-        return self.nomeUsuario,self.emailPessoal,self.nomeCompleto,data_nascimento,hoje # Retorno de dados
+                    # SendMail.sendMail(self)  # Chama a funcao do envio do email   
+        return email_corporativo,self.nomeUsuario,self.emailPessoal,self.nomeCompleto,data_nascimento,hoje # Retorno de dados
     def sendMail(self): #Faz envio do E-mail
-        email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
-        # email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
+        # email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
+        email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
 
         subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!' #Titulo do E-mail
         picture = 'https://fgmdentalgroup.com/wp-content/uploads/2025/01/aniversario-1.jpg' #Armazena a imagem do E-mail
@@ -80,3 +84,7 @@ class SendMail:
             logging.info(f"Enviado e-mail para {email_group}")
         else:
             logging.error(f'Falha ao enviar email: {response.status_code}: {response.text}')
+if __name__ == "__main__":
+    start = SendMail()
+    send = start.send_birthday_emails()
+    send2 = start.sendMail()
