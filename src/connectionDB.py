@@ -81,6 +81,25 @@ class Database:
                     ) AS POSTRA_CHE,
                     (
                     SELECT
+                        Z.IDEPOS
+                    FROM
+                        senior.R017HIE Z
+                    WHERE
+                        Z.ESTPOS = FUN.ESTPOS
+                        AND ROWNUM <= 1
+                        AND Z.POSPOS = (
+                        SELECT
+                            SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                        FROM
+                            senior.R017HIE HIE
+                        WHERE
+                            HIE.ESTPOS = FUN.ESTPOS
+                            AND HIE.POSTRA = FUN.POSTRA
+                            AND ROWNUM <= 1
+                        )
+                    ) AS IDEPOS,
+                    (
+                    SELECT
                         K.NOMFUN
                     FROM
                         senior.R034FUN K
