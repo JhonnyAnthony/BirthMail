@@ -14,11 +14,13 @@ class SendMail:
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados: #Loop para verificar todos os Usuários
             nomeSuperior = resultado.NOMESUP
-            userSup = resultado.USERSUP
+            nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
+            self.userSup = resultado.USERSUP
+            setor = resultado.NOMLOC
             self.local = resultado.NUMLOC
             self.posto = resultado.POSTRA_CHE
-            nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
-            if nomeSuperior and nomeFun:
+            if nomeSuperior and nomeFun and setor:
+                self.setor = setor.title()
                 self.nomeSup = nomeSuperior.title()
                 self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
             # userSup = resultado.USERSUP
@@ -26,25 +28,28 @@ class SendMail:
             dataNas = resultado.DATNAS                  #Armazenamento da Data de Nascimento
             self.emailPessoal = resultado.EMAPAR        #Armazenamento do E-mail do Usuário
             self.nomeUsuario = resultado.NOMUSU         #Armazenamento do Usuário de E-mail.
-            hoje = datetime.now().strftime("%d/%m")     #Armazenamento da Data do Dia
+            mes = datetime.now().strftime("%m")     #Armazenamento da Data do Dia
             if not isinstance(dataNas, datetime):       #Situação para poder mudar a tipagem da data
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")   #Armazenamento de dado para Conversão
-            data_nascimento = dataNas.strftime("%d/%m") #Armazenamento de Data de Nascimento pós Conversão
-            email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
-            # if (data_nascimento == hoje):               #Situação quando Data Nascimento é IGUAL Data do Dia
+            data_nascimento = dataNas.strftime("%m") #Armazenamento de Data de Nascimento pós Conversão
+            # if (data_nascimento == mes):               #Situação quando Data Nascimento é IGUAL Data do Dia
             idePos = resultado.IDEPOS
-            posto = [self.nomeCompleto, self.posto,nomeSuperior,idePos,userSup]
-            if (self.nomeUsuario == 'jhonny.souza'): #TESTE
-                if (self.nomeUsuario not in seen and self.emailPessoal != ' ' and nomeSuperior != None):# Situação para não duplicar nomes
+            teste = [self.local,nomeSuperior, idePos]
+            posto = [self.nomeCompleto, self.posto,nomeSuperior,idePos,self.userSup, setor]
+            superior = []
+            if (data_nascimento == mes): #TESTE
+                if (superior):
+                    print(nomeFun)
+                if (self.posto not in seen and self.emailPessoal != ' ' and nomeSuperior != None):# Situação para não duplicar nomes
                     seen.add(self.nomeUsuario) #Adiciona nome aos dados "Vistos"
-                    print(posto) #Print de Retorno de dados
+                    posto = [self.nomeUsuario, data_nascimento,nomeSuperior]
                     # SendMail.sendMail(self)  # Chama a funcao do envio do email   
-        return email_corporativo,self.nomeUsuario,self.emailPessoal,self.nomeCompleto,data_nascimento,hoje # Retorno de dados
+        return self.nomeUsuario,data_nascimento,self.nomeCompleto,self.userSup # Retorno de dados
     def sendMail(self): #Faz envio do E-mail
-        # email_group = [f"{self.nomeUsuario}@fgmdentalgroup.com",f'{self.emailPessoal}'] #Armazenamento dos E-mails a serem enviados
+        email_group = [f"{self.userSup}@fgmdentalgroup.com"] #Armazenamento dos E-mails a serem enviados
         email_group = [f"jhonny.souza@fgmdentalgroup.com"] # TESTE
 
-        subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!' #Titulo do E-mail
+        subject = f'Aniversáriantes do mês, Setor {self.setor}!' #Titulo do E-mail
         picture = 'https://fgmdentalgroup.com/wp-content/uploads/2025/01/aniversario-1.jpg' #Armazena a imagem do E-mail
         linkRedirect= 'https://fgmdentalgroup.com/Endomarketing/Aniversario/0001.html'      #Armazena o link de redirecionamento da Imagem
         #Corpo do E-mail 
