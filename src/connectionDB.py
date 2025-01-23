@@ -39,10 +39,6 @@ class Database:
             self.cursor = self.connection.cursor()
             self.cursor.execute("""
                 SELECT
-                    FUN.SITAFA AS SITAFA,
-                    -- Situação
-                    FUN.TIPADM AS TIPADM,
-                    -- Tipo
                     FUN.NUMCAD AS NUMCAD,
                     -- Matrícula
                     FUN.DATADM AS DATADM,
@@ -61,6 +57,8 @@ class Database:
                     -- Cargo
                     ORN.NOMLOC AS NOMLOC,
                     -- Setor
+                    FUN.NUMLOC  AS NUMLOC,
+                    --Local
                     FUN.POSTRA,
                     (
                     SELECT
