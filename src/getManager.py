@@ -13,33 +13,28 @@ class SendMail:
         resultados = self.db.query() #Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados: #Loop para verificar todos os Usuários
-            nomeSuperior = resultado.NOMESUP
-            nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
             self.userSup = resultado.USERSUP
-            setor = resultado.NOMLOC
             self.local = resultado.NUMLOC
             self.posto = resultado.POSTRA_CHE
+            setor = resultado.NOMLOC
+            nomeSuperior = resultado.NOMESUP
+            nomeFun = resultado.NOMFUN                  #Utilizado para Conversão 
             if nomeSuperior and nomeFun and setor:
                 self.setor = setor.title()
                 self.nomeSup = nomeSuperior.title()
                 self.nomeCompleto = nomeFun.title()         #Armazenamento da Nome Completo do Usuário
             # userSup = resultado.USERSUP
             numCad = resultado.NUMCAD                   #Armazenamento da Matricula
-            dataNas = resultado.DATNAS                  #Armazenamento da Data de Nascimento
             self.emailPessoal = resultado.EMAPAR        #Armazenamento do E-mail do Usuário
             self.nomeUsuario = resultado.NOMUSU         #Armazenamento do Usuário de E-mail.
             mes = datetime.now().strftime("%m")     #Armazenamento da Data do Dia
+            dataNas = resultado.DATNAS                  #Armazenamento da Data de Nascimento
             if not isinstance(dataNas, datetime):       #Situação para poder mudar a tipagem da data
                 dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")   #Armazenamento de dado para Conversão
             data_nascimento = dataNas.strftime("%m") #Armazenamento de Data de Nascimento pós Conversão
             # if (data_nascimento == mes):               #Situação quando Data Nascimento é IGUAL Data do Dia
             idePos = resultado.IDEPOS
-            teste = [self.local,nomeSuperior, idePos]
-            posto = [self.nomeCompleto, self.posto,nomeSuperior,idePos,self.userSup, setor]
-            superior = []
             if (data_nascimento == mes): #TESTE
-                if (superior):
-                    print(nomeFun)
                 if (self.posto not in seen and self.emailPessoal != ' ' and nomeSuperior != None):# Situação para não duplicar nomes
                     seen.add(self.nomeUsuario) #Adiciona nome aos dados "Vistos"
                     posto = [self.nomeUsuario, data_nascimento,nomeSuperior]
