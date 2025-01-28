@@ -10,7 +10,9 @@ port_data = os.getenv('port')
 service_name_data=os.getenv('service_name')
 user_data=os.getenv('user')
 password_data=os.getenv('password')
-
+pictureBirth = os.getenv('PICTUREBIRTH')
+pictureNew = os.getenv('PICTURENEW')
+linkRedirect= os.getenv('LINKREDIRECT')
 #API
 scope = os.getenv("SCOPE")
 tenant_id = os.getenv("TENANT_ID")

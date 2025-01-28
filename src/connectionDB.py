@@ -2,7 +2,6 @@ import oracledb
 import logging
 from collections import namedtuple
 from config import host_data, port_data, service_name_data,user_data,password_data
-
 class Database:
     def __init__(self):
         self.connection = None #Declara conexão como None

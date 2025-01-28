@@ -1,22 +1,21 @@
 import os
-import json
 import logging
-import requests
 from datetime import datetime
-
-from config import client_secret, client_id, tenant_id, scope, email_from
+from connectionDB import Database
+from sendMail import SendMail
 
 class BithMail:
     def __init__(self):
-        pass
-    @staticmethod
-    def logs():
-        log_directory = r"C:/Github/BirthMail/Logs"
-        if not os.path.exists(log_directory):
-            os.makedirs(log_directory)
+        self.db = Database()
+        self.db.connectData()
 
-        current_datetime = datetime.now()
-        log_filename = os.path.join(log_directory, current_datetime.strftime("%Y-%m-%d") + "_log.log")
+    def logs():
+        log_directory = r"C:/Github/BirthMail/Logs" #path para ser colocado as Logs
+        if not os.path.exists(log_directory):
+            os.makedirs(log_directory) #caso o path nao exista ele vai criar
+
+        current_datetime = datetime.now() #data de hoje
+        log_filename = os.path.join(log_directory, current_datetime.strftime("%Y-%m-%d") + "_log.log") #declara o nome do arquivo log
 
         logging.basicConfig(
             level=logging.INFO,
@@ -25,6 +24,8 @@ class BithMail:
             filename=log_filename
         )
     logs()
+    
 
-if __name__ == "__main__": #Inicia o Projeto
-    main = BithMail()
+if __name__ == "__main__":
+    start = SendMail()
+    start.send_birthday_emails()
