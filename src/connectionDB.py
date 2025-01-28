@@ -193,6 +193,24 @@ class Database:
                 WHERE
                     FUN.SITAFA = '1'
                     AND FUN.TIPCOL = '1'
+                    AND (
+                        SELECT
+                            Z.POSTRA
+                        FROM
+                            senior.R017HIE Z
+                        WHERE
+                            Z.ESTPOS = FUN.ESTPOS
+                            AND Z.POSPOS = (
+                                SELECT
+                                    SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                                FROM
+                                    senior.R017HIE HIE
+                                WHERE
+                                    HIE.ESTPOS = FUN.ESTPOS
+                                    AND HIE.POSTRA = FUN.POSTRA
+                                    AND ROWNUM <= 1
+                            )
+                            AND ROWNUM <= 1) IS NOT NULL
             """)
             RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
             rows = self.cursor.fetchall()
