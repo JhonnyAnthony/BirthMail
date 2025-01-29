@@ -15,6 +15,7 @@ class Database:
             'password': password_data
         }
         
+        
         # Check if environment variables are loaded
         if None in dsn.values():
             logging.error("Missing one or more environment variables.")

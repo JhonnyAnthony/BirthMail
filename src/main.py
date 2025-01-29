@@ -10,7 +10,9 @@ class BithMail:
         self.db.connectData()
 
     def logs():
-        log_directory = r"C:/Github/BirthMail/Logs" #path para ser colocado as Logs
+        #log_directory = r"C:/Github/BirthMail/Logs" #path para ser colocado as Logs
+        log_directory = r"/home/fgm/Scripts/BirthMail/Logs" #path para ser colocado as Logs
+
         if not os.path.exists(log_directory):
             os.makedirs(log_directory) #caso o path nao exista ele vai criar
 
@@ -25,7 +27,6 @@ class BithMail:
         )
     logs()
     
-
 if __name__ == "__main__":
     start = SendMail()
     start.send_birthday_emails()
