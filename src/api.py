@@ -1,13 +1,11 @@
 import logging
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
 from connectionDB import Database
 from datetime import datetime
-from enum import Enum
 from typing import List, Dict
-
+from models import DiretorItem,SupervisorItem,Category,CoordenadorItem,Item
 app = FastAPI()
-
+# uvicorn src/api:app --reload  
 class Connection:
     def __init__(self):
         self.db = Database()
@@ -15,43 +13,6 @@ class Connection:
 
     def connection(self):
         return self.db.query()
-
-class Category(str, Enum):
-    DIRETOR = "diretor"
-    SUPERIOR = "superior"
-    EMPLOYEE = "employee"
-
-class Item(BaseModel):
-    id: int
-    nome: str
-    data_nas: str
-    cargo: str
-    category: Category
-
-class CoordenadorItem(BaseModel):
-    id: int
-    nome: str
-    cargo: str
-    data_nas: str
-    category: Category
-    subordinados: List[Item] = Field(default_factory=list)
-
-class SupervisorItem(BaseModel):
-    id: int
-    nome: str
-    cargo: str
-    data_nas: str
-    category: Category
-    coordenadores: List[CoordenadorItem] = Field(default_factory=list)
-
-class DiretorItem(BaseModel):
-    id: int
-    nome: str
-    cargo: str
-    data_nas: str
-    category: Category
-    supervisores: List[SupervisorItem] = Field(default_factory=list)
-
 connection_instance = Connection()
 results = connection_instance.connection()
 
