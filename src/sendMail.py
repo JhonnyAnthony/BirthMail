@@ -21,13 +21,13 @@ class SendMail:
         datAdm = resultado.DATADM
         nomeFun = resultado.NOMFUN
 
+
         if nomeSuperior and nomeFun:
             self.nomeSup = nomeSuperior.title()
             self.nomeCompleto = nomeFun.title()
 
         numCad = resultado.NUMCAD
         dataNas = resultado.DATNAS
-        self.emailPessoal = resultado.EMAPAR
         self.nomeUsuario = resultado.NOMUSU
         hoje = datetime.now().strftime("%d/%m")
         hojeAdm = datetime.now().strftime("%d/%m/%y")
@@ -38,12 +38,16 @@ class SendMail:
 
         data_admissao = datAdm.strftime("%d/%m/%y")
         data_nascimento = dataNas.strftime("%d/%m")
-        email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
+        self.emailPessoal = resultado.EMAPAR
+        self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
+
 
         if data_admissao == hojeAdm:
             self._send_anniversary_email(seen)
-        elif data_nascimento == hoje:
+            print(self.nomeCompleto,data_admissao)
+        if data_nascimento == hoje:
             self._send_birthday_email(seen)
+            print(self.nomeCompleto,data_admissao)
 
     def _send_anniversary_email(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
@@ -74,6 +78,7 @@ class SendMail:
                         </a></body></html>"""
 
     def _send_email(self):
+        # email_group = [f"{self.email_corporativo}",f"{self.emailPessoal}"]  # PRD
         email_group = [f"jhonny.souza@fgmdentalgroup.com"]  # TESTE
         subject = self.subject
         body = self.body
