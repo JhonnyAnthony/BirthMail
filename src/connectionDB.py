@@ -2,7 +2,6 @@ import oracledb
 import logging
 from collections import namedtuple
 from config import host_data, port_data, service_name_data,user_data,password_data
-
 class Database:
     def __init__(self):
         self.connection = None #Declara conexão como None
@@ -40,34 +39,178 @@ class Database:
             self.cursor = self.connection.cursor()
             self.cursor.execute("""
                 SELECT
-                    R034FUN.NUMEMP AS NUMEMP,
-                    R034FUN.TIPCOL AS TIPCOL,
-                    R034FUN.NUMCAD AS NUMCAD,
-                    R034FUN.NOMFUN AS NOMFUN,
-                    R034FUN.TIPADM AS TIPADM,
-                    R034FUN.SITAFA AS SITAFA,
-                    R034FUN.DATNAS AS DATNAS,
-                    R999USU.CODUSU AS CODUSU,
-                    R999USU.NOMUSU AS NOMUSU,
-                    R034CPL.EMAPAR AS EMAPAR
+                    FUN.NUMCAD AS NUMCAD,
+                    -- Matrícula
+                    FUN.DATADM AS DATADM,
+                    -- Data Admissão
+                    FUN.DATNAS AS DATNAS,
+                    -- Data Nascimento
+                    FUN.NOMFUN AS NOMFUN,
+                    -- Nome completo
+                    EM.EMAPAR AS EMAPAR,
+                    -- Email pessoal
+                    USU.NOMUSU AS NOMUSU,
+                    -- Usuário 
+                    FUN.CODCAR AS CODCAR,
+                    -- Código cargo
+                    CAR.TITCAR AS TITCAR,
+                    -- Cargo
+                    ORN.NOMLOC AS NOMLOC,
+                    -- Setor
+                    FUN.NUMLOC  AS NUMLOC,
+                    --Local
+                    FUN.POSTRA,
+                    (
+                    SELECT
+                        Z.POSTRA
+                    FROM
+                        senior.R017HIE Z
+                    WHERE
+                        Z.ESTPOS = FUN.ESTPOS
+                        AND ROWNUM <= 1
+                        AND Z.POSPOS = (
+                        SELECT
+                            SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                        FROM
+                            senior.R017HIE HIE
+                        WHERE
+                            HIE.ESTPOS = FUN.ESTPOS
+                            AND HIE.POSTRA = FUN.POSTRA
+                            AND ROWNUM <= 1
+                        )
+                    ) AS POSTRA_CHE,
+                    (
+                    SELECT
+                        Z.IDEPOS
+                    FROM
+                        senior.R017HIE Z
+                    WHERE
+                        Z.ESTPOS = FUN.ESTPOS
+                        AND ROWNUM <= 1
+                        AND Z.POSPOS = (
+                        SELECT
+                            SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                        FROM
+                            senior.R017HIE HIE
+                        WHERE
+                            HIE.ESTPOS = FUN.ESTPOS
+                            AND HIE.POSTRA = FUN.POSTRA
+                            AND ROWNUM <= 1
+                        )
+                    ) AS IDEPOS,
+                    (
+                    SELECT
+                        K.NOMFUN
+                    FROM
+                        senior.R034FUN K
+                    WHERE
+                        ROWNUM = 1
+                        AND K.SITAFA <> 7
+                        AND K.ESTPOS = FUN.ESTPOS
+                        AND K.POSTRA = (
+                        SELECT
+                            Z.POSTRA
+                        FROM
+                            senior.R017HIE Z
+                        WHERE
+                            Z.ESTPOS = FUN.ESTPOS
+                            AND ROWNUM <= 1
+                            AND Z.POSPOS = (
+                            SELECT
+                                SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                            FROM
+                                senior.R017HIE HIE
+                            WHERE
+                                HIE.ESTPOS = FUN.ESTPOS
+                                AND HIE.POSTRA = FUN.POSTRA
+                                AND ROWNUM <= 1
+                            )
+                        )
+                    ) AS NOMESUP,
+                    (
+                    SELECT
+                        SUP.NOMUSU
+                    FROM
+                        senior.R034FUN K
+                    INNER JOIN senior.R034USU F ON
+                        K.NUMEMP = F.NUMEMP
+                        AND K.TIPCOL = F.TIPCOL
+                        AND K.NUMCAD = F.NUMCAD
+                    INNER JOIN senior.R999USU SUP ON
+                        F.CODUSU = SUP.CODUSU
+                    INNER JOIN senior.R034FOT PHO ON
+                        K.NUMCAD = PHO.NUMCAD
+                        AND K.TIPCOL = PHO.TIPCOL
+                        AND K.NUMEMP = PHO.NUMEMP
+                    WHERE
+                        ROWNUM = 1
+                        AND K.SITAFA <> 7
+                        AND K.ESTPOS = K.ESTPOS
+                        AND K.POSTRA = (
+                        SELECT
+                            Z.POSTRA
+                        FROM
+                            senior.R017HIE Z
+                        WHERE
+                            Z.ESTPOS = FUN.ESTPOS
+                            AND ROWNUM <= 1
+                            AND Z.POSPOS = (
+                            SELECT
+                                SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                            FROM
+                                senior.R017HIE HIE
+                            WHERE
+                                HIE.ESTPOS = FUN.ESTPOS
+                                AND HIE.POSTRA = FUN.POSTRA
+                                AND ROWNUM <= 1
+                            )
+                    )
+                ) AS USERSUP
                 FROM
-                    SENIOR.R034FUN
-                INNER JOIN
-                    SENIOR.R034USU
-                ON
-                    R034FUN.NUMCAD = R034USU.NUMCAD
-                INNER JOIN
-                    SENIOR.R999USU
-                ON
-                    R034USU.CODUSU = R999USU.CODUSU
-                INNER JOIN
-                    SENIOR.R034CPL
-                ON
-                    R034FUN.NUMCAD = R034CPL.NUMCAD
+                    senior.R034FUN FUN
+                INNER JOIN senior.R030EMP EMP ON
+                    FUN.NUMEMP = EMP.NUMEMP
+                INNER JOIN senior.R024CAR CAR ON
+                    FUN.CODCAR = CAR.CODCAR
+                    AND FUN.ESTCAR = CAR.ESTCAR
+                INNER JOIN senior.R034CPL EM ON
+                    FUN.NUMCAD = EM.NUMCAD
+                INNER JOIN senior.R016ORN ORN ON
+                    ORN.NUMLOC = FUN.NUMLOC
+                INNER JOIN senior.R030FIL FIL ON
+                    FUN.CODFIL = FIL.CODFIL
+                    AND FUN.NUMEMP = FIL.NUMEMP
+                LEFT JOIN senior.R034USU FUS ON
+                    FUN.NUMEMP = FUS.NUMEMP
+                    AND FUN.TIPCOL = FUS.TIPCOL
+                    AND FUN.NUMCAD = FUS.NUMCAD
+                LEFT JOIN senior.R999USU USU ON
+                    FUS.CODUSU = USU.CODUSU
+                LEFT JOIN senior.R034FOT PHO ON
+                    FUN.NUMCAD = PHO.NUMCAD
+                    AND FUN.TIPCOL = PHO.TIPCOL
+                    AND FUN.NUMEMP = PHO.NUMEMP
                 WHERE
-                    R034FUN.SITAFA = '1'
-                AND
-                    R034FUN.TIPCOL = '1'
+                    FUN.SITAFA = '1'
+                    AND FUN.TIPCOL = '1'
+                    AND (
+                        SELECT
+                            Z.POSTRA
+                        FROM
+                            senior.R017HIE Z
+                        WHERE
+                            Z.ESTPOS = FUN.ESTPOS
+                            AND Z.POSPOS = (
+                                SELECT
+                                    SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                                FROM
+                                    senior.R017HIE HIE
+                                WHERE
+                                    HIE.ESTPOS = FUN.ESTPOS
+                                    AND HIE.POSTRA = FUN.POSTRA
+                                    AND ROWNUM <= 1
+                            )
+                            AND ROWNUM <= 1) IS NOT NULL
             """)
             RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
             rows = self.cursor.fetchall()
