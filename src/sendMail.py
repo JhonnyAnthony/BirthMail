@@ -29,7 +29,7 @@ class SendMail:
         dataNas = resultado.DATNAS
         self.emailPessoal = resultado.EMAPAR
         self.nomeUsuario = resultado.NOMUSU
-        hoje = datetime.now().strftime("%d/%m/")
+        hoje = datetime.now().strftime("%d/%m")
         hojeAdm = datetime.now().strftime("%d/%m/%y")
 
         if not isinstance(dataNas, datetime):
@@ -40,9 +40,9 @@ class SendMail:
         data_nascimento = dataNas.strftime("%d/%m")
         email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
-        if data_admissao == '03/02/25':
+        if data_admissao == hojeAdm:
             self._send_anniversary_email(seen)
-        elif self.nomeUsuario == 'adriano.guerra':
+        elif data_nascimento == hoje:
             self._send_birthday_email(seen)
 
     def _send_anniversary_email(self, seen):
