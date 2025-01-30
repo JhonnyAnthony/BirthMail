@@ -38,17 +38,27 @@ class SendMail:
 
         data_admissao = datAdm.strftime("%d/%m/%y")
         data_nascimento = dataNas.strftime("%d/%m")
+        aniversarianteMes = dataNas.strftime("%m")
+        mes = datetime.now().strftime("%m")
         self.emailPessoal = resultado.EMAPAR
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
 
         if data_admissao == hojeAdm:
             self._send_anniversary_email(seen)
-            print(self.nomeCompleto,data_admissao)
-        if data_nascimento == hoje:
+            print(self.nomeCompleto,data_admissao,data_nascimento)
+        elif data_nascimento == hoje:
             self._send_birthday_email(seen)
-            print(self.nomeCompleto,data_admissao)
-
+            print(self.nomeCompleto,data_admissao,data_nascimento)
+        #elif aniversarianteMes == mes:
+        #     print(f"{self.nomeCompleto},Superior: {nomeSuperior}")
+    def _send_annversary_mensal_mail(self,seen):
+        if self.nomeUsuario not in seen and self.emailPessoal.strip():
+            seen.add(self.nomeUsuario)
+            self.subject = 'Aniversáriantes do Mês!'
+            self.body = self._generate_email_body()
+            logging.info(f"E-mail enviado a {self.nomeUsuario}")
+            self._send_email()
     def _send_anniversary_email(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)

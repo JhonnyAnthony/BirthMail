@@ -1,44 +1,55 @@
-from fastapi import FastAPI
+from flask import Flask, jsonify
+from schemas import Connection
 from datetime import datetime
-from typing import List, Dict
-from schemas import Category, CoordenadorItem, Item, SubordinadoItem,Connection
 
+app = Flask(__name__)
 
-app = FastAPI()
+@app.route('/cargos', methods=['GET'])
+def get_cargos():
+    connection_instance = Connection()
+    results = connection_instance.connection()
 
+    # Dicionário para armazenar todos os cargos com base no ID
+    cargos_dict = {}
+    id = 0
+    for result in results:
+        id += 1
+        setor = result.NOMLOC
+        nome_sup = result.NOMESUP   if result.NOMESUP else 'BIANCA DE OLIVEIRA LUIZ MITTELSTADT'# Tratar null
+        nome_completo = result.NOMFUN
+        cargo = result.TITCAR.title()
+        idPos = result.IDEPOS
+        dataNas = result.DATNAS
+        if not isinstance(dataNas, datetime):
+            dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
+        data_nascimento = dataNas.strftime("%d/%m")
 
+        cargos_dict[id] = {
+            "id": id,
+            "idPos": idPos,
+            "setor": setor,
+            "data_nascimento": data_nascimento,
+            "nome_sup": nome_sup,
+            "nome_completo": nome_completo,
+            "cargo": cargo,
+            "subordinados": []
+        }
 
-connection_instance = Connection()
-results = connection_instance.connection()
+    # Construir a hierarquia
+    hierarchy = []
+    for cargo in cargos_dict.values():
+        nome_sup = cargo["nome_sup"]
+        
+        if nome_sup != 'BIANCA DE OLIVEIRA LUIZ MITTELSTADT':
+            superior = next((sup for sup in cargos_dict.values() if sup["nome_completo"] == nome_sup), None)
+            if superior:
+                superior["subordinados"].append(cargo)
+            else:
+                    hierarchy.append(cargo)
+        else:
+            hierarchy.append(cargo)
 
-subordinados: Dict[str, SubordinadoItem] = {}
-coordenadores: Dict[str, CoordenadorItem] = {}
-subordinate_id_counter = 1
-coordenador_id_counter = 1
+    return jsonify(hierarchy)
 
-for result in results:
-    nome_sup = result.NOMESUP
-    nome_completo = result.NOMFUN
-    cargo = result.TITCAR.title()
-    idPos = result.IDEPOS
-    dataNas = result.DATNAS
-    if not isinstance(dataNas, datetime):
-        dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
-    data_nascimento = dataNas.strftime("%d/%m")
-    
-    if nome_completo not in subordinados:
-        subordinados = SubordinadoItem(id=subordinate_id_counter, nome=nome_completo.title(), data_nas=data_nascimento, cargo=cargo, idPos=idPos, category=Category.EMPLOYEE)
-        subordinate_id_counter += 1
-    if nome_sup:
-        if nome_sup not in coordenadores:
-            coordenadores[nome_sup] = CoordenadorItem(id=coordenador_id_counter, nome=nome_sup.title(), cargo=cargo, data_nas=data_nascimento, idPos=idPos, category=Category.COORDENADOR)
-            coordenador_id_counter += 1
-
-
-    if nome_sup:
-        coordenadores[nome_sup].subordinados.append(subordinados)
-
-@app.get("/")
-def index() -> List[CoordenadorItem]:
-    return list(coordenadores.values())
-
+if __name__ == '__main__':
+    app.run(debug=True)
