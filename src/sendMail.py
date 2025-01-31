@@ -4,7 +4,6 @@ from config import client_secret, client_id, tenant_id, scope, email_from, pictu
 import requests
 import logging
 import json
-
 class SendMail:
     def __init__(self):
         self.db = Database()
@@ -20,7 +19,7 @@ class SendMail:
         nomeSuperior = resultado.NOMESUP
         datAdm = resultado.DATADM
         nomeFun = resultado.NOMFUN
-
+    
 
         if nomeSuperior and nomeFun:
             self.nomeSup = nomeSuperior.title()
@@ -44,12 +43,13 @@ class SendMail:
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
 
-        if data_admissao == hojeAdm:
+        # if data_admissao == hojeAdm:
+        if self.nomeUsuario == 'jhonny.souza':
             self._send_welcome_mail(seen)
             print(f"Bem Vindo {self.nomeCompleto},{data_admissao},{data_nascimento}")
-        elif data_nascimento == hoje:
-            self._send_birthday_email(seen)
-            print(f"Hoje é o seu Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
+        # elif data_nascimento == hoje:
+            # self._send_birthday_email(seen)
+            # print(f"Hoje é o seu Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
         #elif aniversarianteMes == mes:
         #     print(f"{self.nomeCompleto},Superior: {nomeSuperior}")
     # def _send_annversary_mensal_mail(self,seen):
@@ -62,8 +62,8 @@ class SendMail:
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
-            self.subject = 'teste!'
-            self.body = self._generate_email_body(pictureNew, 'ImageBirth')
+            self.subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
+            self.body = self._generate_email_body(pictureNew, 'ImageWelcome')
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
             self._send_email()
 
@@ -75,7 +75,7 @@ class SendMail:
             self.subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
             self.body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
-            self._send_email()
+            # self._send_email()
 
     def _generate_email_body(self, image_src, alt_text, link=None):
         if link:
@@ -90,8 +90,8 @@ class SendMail:
                         </a></body></html>"""
 
     def _send_email(self):
-        # email_group = [f"{self.email_corporativo}",f"{self.emailPessoal}"]  # PRD
-        email_group = [f"jhonny.souza@fgmdentalgroup.com"]  # TESTE
+        email_group = [f"{self.email_corporativo}",f"{self.emailPessoal}"]  # PRD
+        # email_group = [f"jhonny.souza@fgmdentalgroup.com"]  # TESTE
         subject = self.subject
         body = self.body
 
