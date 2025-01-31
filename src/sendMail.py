@@ -43,14 +43,17 @@ class SendMail:
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
 
-        # if data_admissao == hojeAdm:
-        if self.nomeUsuario == 'jhonny.souza':
+        # if self.nomeUsuario == 'jhonny.souza':
+        if data_admissao == hojeAdm:
             self._send_welcome_mail(seen)
             print(f"Bem Vindo {self.nomeCompleto},{data_admissao},{data_nascimento}")
-        # elif data_nascimento == hoje:
-            # self._send_birthday_email(seen)
-            # print(f"Hoje é o seu Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
-        #elif aniversarianteMes == mes:
+        # elif data_nascimento == '01/07' and self.nomeUsuario == 'jhonny.souza':
+        elif data_nascimento == hoje:
+            self._send_birthday_email(seen)
+            print(f"Hoje é o seu Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
+        elif data_nascimento == hoje and data_admissao == hojeAdm:
+            print("testar")
+        # elif aniversarianteMes == mes:
         #     print(f"{self.nomeCompleto},Superior: {nomeSuperior}")
     # def _send_annversary_mensal_mail(self,seen):
     #     if self.nomeUsuario not in seen and self.emailPessoal.strip():
@@ -75,7 +78,7 @@ class SendMail:
             self.subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
             self.body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
-            # self._send_email()
+            self._send_email()
 
     def _generate_email_body(self, image_src, alt_text, link=None):
         if link:
