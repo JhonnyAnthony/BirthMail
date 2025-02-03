@@ -145,6 +145,7 @@ class Database:
                     WHERE
                         FUN.SITAFA = '1'
                         AND FUN.TIPCOL = '1'
+                        AND CAR.TITCAR != 'PENSIONISTA'
                 )
                 WHERE RN = 1
             """)
