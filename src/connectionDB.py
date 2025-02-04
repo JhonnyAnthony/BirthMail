@@ -58,7 +58,7 @@ class Database:
                         -- Código cargo
                         CAR.TITCAR AS TITCAR,
                         -- Cargo
-                        ORN.NOMLOC AS NOMLOC,
+                        ORN.NOMLOC AS NOMLOCAL,
                         -- Setor
                         FUN.NUMLOC AS NUMLOC,
                         -- Local
