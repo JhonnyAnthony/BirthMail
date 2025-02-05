@@ -33,8 +33,6 @@ class Manager:
         email_supervisor = f"jhonny.souza@fgmdentalgroup.com"  # Define o e-mail do supervisor para testes
         self.emailTeste = f"jhonny.souza@fgmdentalgroup.com"  # Define o e-mail do supervisor para testes
         # email_supervisor = f"{usuario}@fgmdentalgroup.com"  # Define o e-mail do supervisor para testes
-        if email_supervisor == 'bianca@fgmdentalgroup.com':
-            email_supervisor == '' 
         if nome_supervisor:
             if nome_supervisor not in self.supervisores:
                 self.supervisores[nome_supervisor] = {"funcionarios": [], "email": email_supervisor}
@@ -86,18 +84,25 @@ class Manager:
         else: print("não tem aniversários Hoje.")       
 
     def _send_mail_rh(self, aniversariantes):
-        email_rh = self.email_rh 
-        mes_atual = datetime.now().strftime("%B").title()
-        subject = f'Aniversariantes do mês de {mes_atual}'
-        body = self._generate_rh_email_body(aniversariantes)
-        print(f"E-mail enviado ao RH ({email_rh})")
-        self._send_email(email_rh, subject, body)
+        mesStart = datetime.now().month
+        diaFixo = 28
+        data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
+        diaStart = (data_fixa.strftime("%d/%m"))
+        hoje = datetime.now().strftime("%d/%m")
+        if hoje == '05/02':
+            email_rh = self.email_rh 
+            mes_atual = datetime.now().strftime("%B").title()
+            subject = f'Aniversariantes do mês de {mes_atual}'
+            body = self._generate_rh_email_body(aniversariantes)
+            print(f"E-mail enviado ao RH ({email_rh})")
+            self._send_email(email_rh, subject, body)
 
     def _send_birth_superior_mail(self, aniversariantes): 
         count = 0
         for supervisor, info in aniversariantes.items(): 
             count += 1
             emailSupervisor = info["email"] # Obtém o e-mail do supervisor 
+            print(emailSupervisor)
             funcionarios = info["funcionarios"] 
             mes_atual = datetime.now().strftime("%B").title() 
             subject = f'Aniversariantes do mês de {mes_atual}' # Define o assunto do e-mail 
@@ -108,6 +113,7 @@ class Manager:
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
     
     def _generate_rh_email_body(self, aniversariantes):
+        
         body = "Olá Liderança, Segue a lista de funcionários que fazem aniversário este mês:<br><br>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
         body += "<tr><th>Supervisor</th><th>Funcionário</th><th>Data</th><th>Setor</th></tr>"
@@ -189,8 +195,7 @@ class Manager:
         }
         response = requests.post(url, data=data)
         return response.json().get('access_token')
-
 if __name__ == "__main__":
-    manager = Manager()
-    manager.connectionDB()
-    manager.birthMonth()
+        manager = Manager()
+        manager.connectionDB()
+        manager.birthMonth()
