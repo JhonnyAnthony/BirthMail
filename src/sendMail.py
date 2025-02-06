@@ -43,6 +43,7 @@ class SendMail:
         self.emailPessoal = resultado.EMAPAR
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
+
         if data_admissao == hojeAdm:
         # if self.nomeUsuario == 'jhonny.souza':
             self._send_welcome_mail(seen)
@@ -88,7 +89,7 @@ class SendMail:
                         </a></body></html>"""
 
     def _send_email(self,email_, subject,body):
-        email_group = email_  # PRD
+        email_group = email_  
 
         # Obter token de acesso
         url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
