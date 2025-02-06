@@ -58,7 +58,7 @@ class Database:
                         -- Código cargo
                         CAR.TITCAR AS TITCAR,
                         -- Cargo
-                        ORN.NOMLOC AS NOMLOC,
+                        ORN.NOMLOC AS NOMLOCAL,
                         -- Setor
                         FUN.NUMLOC AS NUMLOC,
                         -- Local
@@ -145,6 +145,7 @@ class Database:
                     WHERE
                         FUN.SITAFA = '1'
                         AND FUN.TIPCOL = '1'
+                        AND CAR.TITCAR != 'PENSIONISTA'
                 )
                 WHERE RN = 1
             """)

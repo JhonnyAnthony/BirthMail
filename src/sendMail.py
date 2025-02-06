@@ -4,6 +4,7 @@ from config import client_secret, client_id, tenant_id, scope, email_from, pictu
 import requests
 import logging
 import json
+
 class SendMail:
     def __init__(self):
         self.db = Database()
@@ -34,7 +35,7 @@ class SendMail:
         if not isinstance(dataNas, datetime):
             datAdm = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
             dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
-
+        
         data_admissao = datAdm.strftime("%d/%m/%y")
         data_nascimento = dataNas.strftime("%d/%m")
         aniversarianteMes = dataNas.strftime("%m")
@@ -43,42 +44,37 @@ class SendMail:
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
 
-        # if self.nomeUsuario == 'jhonny.souza':
         if data_admissao == hojeAdm:
+        # if self.nomeUsuario == 'jhonny.souza':
             self._send_welcome_mail(seen)
-            print(f"Bem Vindo {self.nomeCompleto},{data_admissao},{data_nascimento}")
-        # elif data_nascimento == '01/07' and self.nomeUsuario == 'jhonny.souza':
+            logging.info(f"Bem Vindo {self.nomeCompleto},{data_admissao},{data_nascimento}")
         elif data_nascimento == hoje:
             self._send_birthday_email(seen)
-            print(f"Hoje é o seu Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
-        elif data_nascimento == hoje and data_admissao == hojeAdm:
-            print("testar")
-        # elif aniversarianteMes == mes:
-        #     print(f"{self.nomeCompleto},Superior: {nomeSuperior}")
-    # def _send_annversary_mensal_mail(self,seen):
-    #     if self.nomeUsuario not in seen and self.emailPessoal.strip():
-    #         seen.add(self.nomeUsuario)
-    #         self.subject = 'Aniversáriantes do Mês!'
-    #         self.body = self._generate_email_body()
-    #         logging.info(f"E-mail enviado a {self.nomeUsuario}")
-    #         self._send_email()
+            logging.info(f"Hoje é o Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
+        # elif hoje == diaStart:
+
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
-            self.subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
-            self.body = self._generate_email_body(pictureNew, 'ImageWelcome')
+            # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
+            email = ["jhonny.souza@fgmdentalgroup.com"]
+            subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
+            body = self._generate_email_body(pictureNew, 'ImageWelcome')
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
-            self._send_email()
+            self._send_email(email,subject,body)
+
 
     def _send_birthday_email(self, seen):
         if self.emailPessoal == ' ':
             self.emailPessoal = self.email_corporativo
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
+            # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
+            email = ["jhonny.souza@fgmdentalgroup.com"]
             seen.add(self.nomeUsuario)
-            self.subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
-            self.body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
+            subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
+            body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
-            self._send_email()
+            self._send_email(email,subject,body)
 
     def _generate_email_body(self, image_src, alt_text, link=None):
         if link:
@@ -92,11 +88,8 @@ class SendMail:
                             <img src="{image_src}" alt="{alt_text}">
                         </a></body></html>"""
 
-    def _send_email(self):
-        email_group = [f"{self.email_corporativo}",f"{self.emailPessoal}"]  # PRD
-        # email_group = [f"jhonny.souza@fgmdentalgroup.com"]  # TESTE
-        subject = self.subject
-        body = self.body
+    def _send_email(self,email_, subject,body):
+        email_group = email_  
 
         # Obter token de acesso
         url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
