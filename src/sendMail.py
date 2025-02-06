@@ -43,8 +43,8 @@ class SendMail:
         self.emailPessoal = resultado.EMAPAR
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
-        # if data_admissao == hojeAdm:
-        if self.nomeUsuario == 'jhonny.souza':
+        if data_admissao == hojeAdm:
+        # if self.nomeUsuario == 'jhonny.souza':
             self._send_welcome_mail(seen)
             logging.info(f"Bem Vindo {self.nomeCompleto},{data_admissao},{data_nascimento}")
         elif data_nascimento == hoje:
@@ -54,7 +54,7 @@ class SendMail:
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
-            # seen.add(self.nomeUsuario)
+            seen.add(self.nomeUsuario)
             email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
             # email = ["jhonny.souza@fgmdentalgroup.com"]
             subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
