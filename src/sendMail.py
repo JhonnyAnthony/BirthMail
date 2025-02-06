@@ -4,7 +4,7 @@ from config import client_secret, client_id, tenant_id, scope, email_from, pictu
 import requests
 import logging
 import json
-from getManager import Manager
+
 class SendMail:
     def __init__(self):
         self.db = Database()
@@ -35,10 +35,7 @@ class SendMail:
         if not isinstance(dataNas, datetime):
             datAdm = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
             dataNas = datetime.strptime(dataNas, "%Y-%m-%d %H:%M:%S")
-        mesStart = datetime.now().month
-        diaFixo = 28
-        data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
-        diaStart = (data_fixa.strftime("%d/%m"))
+        
         data_admissao = datAdm.strftime("%d/%m/%y")
         data_nascimento = dataNas.strftime("%d/%m")
         aniversarianteMes = dataNas.strftime("%m")
@@ -54,31 +51,29 @@ class SendMail:
             self._send_birthday_email(seen)
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
         # elif hoje == diaStart:
-        elif hoje == '05/02':
-            manager = Manager()
-            manager.connectionDB()
-            manager.birthMonth()
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
-            email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
+            # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
+            email = ["jhonny.souza@fgmdentalgroup.com"]
             subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
             body = self._generate_email_body(pictureNew, 'ImageWelcome')
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
-            # self._send_email(email,subject,body)
+            self._send_email(email,subject,body)
 
 
     def _send_birthday_email(self, seen):
         if self.emailPessoal == ' ':
             self.emailPessoal = self.email_corporativo
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
-            email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
+            # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
+            email = ["jhonny.souza@fgmdentalgroup.com"]
             seen.add(self.nomeUsuario)
             subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
-            # self._send_email(email,subject,body)
+            self._send_email(email,subject,body)
 
     def _generate_email_body(self, image_src, alt_text, link=None):
         if link:
@@ -93,10 +88,7 @@ class SendMail:
                         </a></body></html>"""
 
     def _send_email(self,email_, subject,body):
-        email_group = [email_]  # PRD
-        # email_group = [f"jhonny.souza@fgmdentalgroup.com"]  # TESTE
-        subject = self.subject
-        body = self.body
+        email_group = email_  # PRD
 
         # Obter token de acesso
         url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
