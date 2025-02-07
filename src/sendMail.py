@@ -51,13 +51,12 @@ class SendMail:
         elif data_nascimento == hoje:
             self._send_birthday_email(seen)
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
-        # elif hoje == diaStart:
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
-            email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
-            # email = ["jhonny.souza@fgmdentalgroup.com"]
+            # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]
+            email = ["jhonny.souza@fgmdentalgroup.com"]
             subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
             body = self._generate_email_body(pictureNew, 'ImageWelcome')
             logging.info(f"E-mail enviado a {self.nomeUsuario}")
