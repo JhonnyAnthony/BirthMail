@@ -27,7 +27,10 @@ class Database:
                 password=dsn['password'],
                 dsn=oracledb.makedsn(dsn['host'], dsn['port'], service_name=dsn['service_name'])
             )
+            logging.info(f"--------------Informações da Database--------------")
             logging.info("Database connection established successfully.")
+            
+
         except oracledb.DatabaseError as e:
             logging.error("Error establishing connection: %s", e)
 
@@ -163,4 +166,5 @@ class Database:
             if self.connection:
                 self.connection.close()
             logging.info("Database connection closed.")
+            logging.info("------------------------------------------------------------------------------------")
         return row_data_list

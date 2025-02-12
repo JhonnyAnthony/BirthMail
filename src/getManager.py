@@ -22,23 +22,24 @@ class Manager:
     def _process_user(self, data):
         local = data.NOMLOCAL
         usuario = data.USERSUP
+        if usuario == 'bianca':
+            usuario = "aline.mira"
         data_nascimento = self._parse_date(data.DATNAS)
         nome_funcionario = self._format_name(data.NOMFUN)
         nome_supervisor = self._format_name(data.NOMESUP)
         self.hoje = datetime.now().strftime("%d/%m")
         mes_nascimento = data_nascimento.strftime("%m")
         dia_mes_nascimento = data_nascimento.strftime("%d/%m")
-        # email_supervisor = [f"{usuario}@fgmdentalgroup.com"]  # Email lista colaborador por lider mensal
-        # self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"] #Email lista mensal
-        # self.emailToday = ["gestaodepessoas@fgmdentalgroup.com","grupo.coordenadores@fgmdentalgroup.com","grupo.supervisores@fgmdentalgroup.com","grupo.gerentes@fgmdentalgroup.com"] #Email aniversario diario
-        self.email_teste = ["jhonny.souza@fgmdentalgroup.com"]
-
+        self.email_teste = ["jhonny.souza@fgmdentalgroup.com"] #-------------------------- QAS ------------------------
+        email_supervisor = [f"{usuario}@fgmdentalgroup.com"]  # Email lista colaborador por lider mensal
+        self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"] #Email lista mensal
+        self.emailToday = ["gestaodepessoas@fgmdentalgroup.com","grupo.coordenadores@fgmdentalgroup.com","grupo.supervisores@fgmdentalgroup.com","grupo.gerentes@fgmdentalgroup.com"] #Email aniversario diario
         
         
         
         if nome_supervisor:
             if nome_supervisor not in self.supervisores:
-                self.supervisores[nome_supervisor] = {"funcionarios": [], "email": self.email_teste}
+                self.supervisores[nome_supervisor] = {"funcionarios": [], "email": email_supervisor}
             self.supervisores[nome_supervisor]["funcionarios"].append((nome_funcionario, mes_nascimento, dia_mes_nascimento,local))
     def _format_name(self, name):
         return ' '.join([word.capitalize() for word in name.split()]) if name else ""
@@ -62,7 +63,6 @@ class Manager:
         aniversariantes_mes = {}
         mes_seguinte = datetime.now() +  relativedelta(months=1)
         mes_seguinte = mes_seguinte.strftime("%m")
-        print(mes_seguinte)
         for supervisor, info in self.supervisores.items():
             for funcionario, mes_nascimento, dia_mes_nascimento, local in info["funcionarios"]:
                 if mes_nascimento == mes_seguinte:
@@ -91,20 +91,22 @@ class Manager:
     def _send_birthday_today_mail(self, aniversariantes, data_aniversario):
         count = 0
         if  self.hoje in data_aniversario:
-            # for supervisor, info in aniversariantes.items(): 
-                count += 1
-                email_morning = self.emailToday       #---------------------PRD-----------------------------
-                # email_morning = self.email_teste    #---------------------QAS-----------------------------
-                subject = f'Aniversariantes do dia'
-                body = self._generate_dayling_email_body(aniversariantes)
-                logging.info(f'Lista de Aniversáriantes do dia Enviada')
-                print(f'Aniversáriantes {count}')
-                self._send_email(email_morning, subject, body)
-        else: logging.info("Sem aniversáriantes no dia!")       
+            count += 1
+            email_morning = self.emailToday       #---------------------PRD-----------------------------
+            # email_morning = self.email_teste    #---------------------QAS-----------------------------
+            subject = f'Aniversariantes do dia'
+            body = self._generate_dayling_email_body(aniversariantes)
+            logging.info(f"--------------Informações do Envio de Email--------------")
+            logging.info(f'Lista de Aniversáriantes do dia Enviada')
+            print(f'Aniversáriantes {count}')
+            self._send_email(email_morning, subject, body)
+        else: 
+            logging.info(f"--------------Informações do Envio de Email--------------")
+            logging.info("Sem aniversáriantes no dia!")       
 
     def _send_mail_rh(self, aniversariantes_mes):
         mesStart = datetime.now().month
-        diaFixo = 27
+        diaFixo = 12
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         hoje = datetime.now().strftime("%d/%m")
@@ -115,14 +117,14 @@ class Manager:
             mes_atual = mes_atual.strftime("%B").title()
             subject = f'Aniversariantes do mês de {mes_atual}'
             body = self._generate_rh_email_body(aniversariantes_mes)
-            print("SEND_MAIL_RH - LIST")
             self._send_email(email_rh, subject, body)
+            logging.info(f'Lista de Aniversáriantes do Mes de {mes_atual} Enviada para {email_rh}')
 
     def _send_birth_superior_mail(self, aniversariantes_mes): 
         count = 0
         hoje = datetime.now().strftime("%d/%m")
         mesStart = datetime.now().month
-        diaFixo = 27   
+        diaFixo = 12   
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         if hoje == diaStart:
@@ -135,7 +137,7 @@ class Manager:
                 mes_atual = mes_atual.strftime("%B").title()
                 subject = f'Aniversariantes do mês de {mes_atual}' # Define o assunto do e-mail 
                 body = self._generate_supervisor_email_body(supervisor, funcionarios) # Gera o corpo do e-mail 
-                print(f"SEND_BIRTH_SUPERIOR_MAIL - LIST {count}")
+                logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_atual}')
                 self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     def _converter_data(self, data_str):
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
@@ -206,6 +208,9 @@ class Manager:
         
         if response.status_code == 202:
             logging.info(f"E-mail enviado para {email_group}")
+            logging.info("------------------------------------------------------------------------------------")
+            
+            
         else:
             logging.error(f'Falha ao enviar e-mail: {response.status_code}: {response.text}')
 

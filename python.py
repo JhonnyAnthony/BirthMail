@@ -1,7 +1,7 @@
-from datetime import datetime
+import socket
+import getpass
+nome_host = socket.gethostname()
+ip_local = socket.gethostbyname(nome_host)
+user = getpass.getuser()
 
-mesStart = datetime.now().month
-diaStart = 28
-data_fixa = datetime(datetime.now().year, mesStart, diaStart)
-teste = (data_fixa.strftime("%d/%m"))
-print(teste)
+print(f"O endereço IPv4 desta máquina é: {ip_local} user {user}")

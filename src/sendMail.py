@@ -46,10 +46,12 @@ class SendMail:
 
         if data_admissao == hojeAdm:
             self._send_welcome_mail(seen)
-            logging.info(f"Bem Vindo {self.nomeCompleto},{data_admissao},{data_nascimento}")
+            logging.info("--------------Informações de Bem Vindo--------------")
+            logging.info(f"Bem Vindo {self.nomeCompleto}")
         elif data_nascimento == hoje:
             self._send_birthday_email(seen)
-            logging.info(f"Hoje é o Aniversário de {self.nomeCompleto},{data_admissao},{data_nascimento}")
+            logging.info("--------------Informações de Aniversário--------------")
+            logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
@@ -58,7 +60,6 @@ class SendMail:
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
             body = self._generate_email_body(pictureNew, 'ImageWelcome')
-            logging.info(f"E-mail enviado a {self.nomeUsuario}")
             self._send_email(email,subject,body)
 
 
@@ -71,7 +72,6 @@ class SendMail:
             seen.add(self.nomeUsuario)
             subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
-            logging.info(f"E-mail enviado a {self.nomeUsuario}")
             self._send_email(email,subject,body)
 
     def _generate_email_body(self, image_src, alt_text, link=None):
@@ -123,5 +123,7 @@ class SendMail:
 
         if response.status_code == 202:
             logging.info(f"Enviado e-mail para {email_group}")
+            logging.info("------------------------------------------------------------------------------------")
+
         else:
             logging.error(f'Falha ao enviar email: {response.status_code}: {response.text}')
