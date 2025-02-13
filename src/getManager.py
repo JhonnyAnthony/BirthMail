@@ -106,7 +106,7 @@ class Manager:
 
     def _send_mail_rh(self, aniversariantes_mes):
         mesStart = datetime.now().month
-        diaFixo = 12
+        diaFixo = 27
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         hoje = datetime.now().strftime("%d/%m")
@@ -117,14 +117,14 @@ class Manager:
             mes_atual = mes_atual.strftime("%B").title()
             subject = f'Aniversariantes do mês de {mes_atual}'
             body = self._generate_rh_email_body(aniversariantes_mes)
-            self._send_email(email_rh, subject, body)
             logging.info(f'Lista de Aniversáriantes do Mes de {mes_atual} Enviada para {email_rh}')
+            self._send_email(email_rh, subject, body)
 
     def _send_birth_superior_mail(self, aniversariantes_mes): 
         count = 0
         hoje = datetime.now().strftime("%d/%m")
         mesStart = datetime.now().month
-        diaFixo = 12   
+        diaFixo = 27   
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         if hoje == diaStart:

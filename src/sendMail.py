@@ -49,9 +49,9 @@ class SendMail:
             logging.info("--------------Informações de Bem Vindo--------------")
             logging.info(f"Bem Vindo {self.nomeCompleto}")
         elif data_nascimento == hoje:
-            self._send_birthday_email(seen)
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
+            self._send_birthday_email(seen)
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
