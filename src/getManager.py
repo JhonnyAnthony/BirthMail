@@ -30,7 +30,7 @@ class Manager:
         self.hoje = datetime.now().strftime("%d/%m")
         mes_nascimento = data_nascimento.strftime("%m")
         dia_mes_nascimento = data_nascimento.strftime("%d/%m")
-        self.email_teste = ["jhonny.souza@fgmdentalgroup.com"] #-------------------------- QAS ------------------------
+        self.email_teste = ["jhonny.souza@fgmdentalgroup.com","vanessa.boing@fgmdentalgroup.com"] #-------------------------- QAS ------------------------
         email_supervisor = [f"{usuario}@fgmdentalgroup.com"]  # Email lista colaborador por lider mensal
         self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"] #Email lista mensal
         self.emailToday = ["gestaodepessoas@fgmdentalgroup.com","grupo.coordenadores@fgmdentalgroup.com","grupo.supervisores@fgmdentalgroup.com","grupo.gerentes@fgmdentalgroup.com"] #Email aniversario diario
@@ -89,16 +89,15 @@ class Manager:
             self._send_birth_superior_mail(aniversariantes_mes)
                     
     def _send_birthday_today_mail(self, aniversariantes, data_aniversario):
-        count = 0
         if  self.hoje in data_aniversario:
-            count += 1
+        
             # email_morning = self.emailToday       #---------------------PRD-----------------------------
             email_morning = self.email_teste    #---------------------QAS-----------------------------
             subject = f'Aniversariantes do dia'
             body = self._generate_dayling_email_body(aniversariantes)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
-            print(f'Aniversáriantes {count}')
+            print("Email Aniversário Diário")
             self._send_email(email_morning, subject, body)
         else: 
             logging.info(f"--------------Informações do Envio de Email--------------")
@@ -117,6 +116,7 @@ class Manager:
             mes_atual = mes_atual.strftime("%B").title()
             subject = f'Aniversariantes do mês de {mes_atual}'
             body = self._generate_rh_email_body(aniversariantes_mes)
+            print("Email Lista RH")
             self._send_email(email_rh, subject, body)
             logging.info(f'Lista de Aniversáriantes do Mes de {mes_atual} Enviada para {email_rh}')
 
@@ -138,6 +138,7 @@ class Manager:
                 subject = f'Aniversariantes do mês de {mes_atual}' # Define o assunto do e-mail 
                 body = self._generate_supervisor_email_body(supervisor, funcionarios) # Gera o corpo do e-mail 
                 logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_atual}')
+                print(f"Contagem: {count}")
                 self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     def _converter_data(self, data_str):
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
@@ -145,41 +146,58 @@ class Manager:
     def _generate_rh_email_body(self, aniversariantes_mes):
         body = f"<strong>Olá Liderança. Segue a lista de colaboradores que fazem aniversário este mês:<br><br></strong>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
-        body += "<tr><th>Liderança</th><th>Colaboradores</th><th>Data</th><th>Setor</th></tr>"
-        supervisores_ordenados = sorted(aniversariantes_mes.items())
+        body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th><th>Setor</th></tr>"""
+        
+        # Colete todos os aniversariantes em uma única lista
+        todos_aniversariantes = []
+        for supervisor, info in aniversariantes_mes.items():
+            for funcionario, dia_mes_nascimento, local in info["funcionarios"]:
+                todos_aniversariantes.append((supervisor, funcionario, dia_mes_nascimento, local))
+        
+        # Ordene todos os aniversariantes por data de aniversário
+        todos_aniversariantes.sort(key=lambda x: (int(x[2].split('/')[1]), int(x[2].split('/')[0])))
 
-        for supervisor, info in supervisores_ordenados:
-            funcionarios_ordenados = sorted(info["funcionarios"], key=lambda x: self._converter_data(x[1]))
-            for funcionario, dia_mes_nascimento, local in funcionarios_ordenados:
-                body += f"<tr><td>{supervisor}</td><td>{funcionario}</td><td>{dia_mes_nascimento}</td><td>{local}</td></tr>"
+        # Construa a tabela
+        for supervisor, funcionario, dia_mes_nascimento, local in todos_aniversariantes:
+            body += f"<tr><td>{funcionario}</td><td>{dia_mes_nascimento}</td><td>{local}</td></tr>"
         
         body += "</table><br>"
         body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
 
-    def _generate_dayling_email_body(self, aniversariantes):
-        body = f"<strong>Olá Liderança. Segue a lista de colaboradores que fazem aniversário este mês:<br><br></strong>"
-        body += "<table border='1' cellpadding='5' cellspacing='0'>"
-        body += "<tr><th>Liderança</th><th>Colaboradores</th><th>Data</th><th>Setor</th></tr>"
-        supervisores_ordenados = sorted(aniversariantes.items())
-        for supervisor, info in supervisores_ordenados:
-            # Adicionar um ano fictício para evitar ambiguidade e ordenar funcionários por data de aniversário
-            funcionarios_ordenados = sorted(info["funcionarios"], key=lambda x: self._converter_data(x[1]))
 
-            for funcionario, dia_mes_nascimento, local in funcionarios_ordenados:
+    def _generate_dayling_email_body(self, aniversariantes):
+        body = f"<strong>Olá Liderança. Segue a lista de colaboradores que fazem aniversário hoje:<br><br></strong>"
+        body += "<table border='1' cellpadding='5' cellspacing='0'>"
+        body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th><th>Setor</th></tr>""" 
+
+        # Colete todos os aniversariantes em uma única lista
+        todos_aniversariantes = []
+        for supervisor, info in aniversariantes.items():
+            for funcionario, dia_mes_nascimento, local in info["funcionarios"]:
                 if dia_mes_nascimento == self.hoje:
-                    body += f"<tr><td>{supervisor}</td><td>🎂{funcionario}</td><td>📅{dia_mes_nascimento}</td><td>{local}</td></tr>"              
+                    todos_aniversariantes.append((funcionario, dia_mes_nascimento, local))
+
+        # Ordene todos os aniversariantes por nome do colaborador
+        todos_aniversariantes.sort(key=lambda x: x[0])
+
+        # Construa a tabela
+        for funcionario, dia_mes_nascimento, local in todos_aniversariantes:
+            body += f"<tr><td>🎂{funcionario}</td><td>📅{dia_mes_nascimento}</td><td>{local}</td></tr>"
+
         body += "</table><br>"
         body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
+
     def _generate_supervisor_email_body(self, supervisor, funcionarios):
         body = f"<strong>Olá {supervisor}. Segue a lista de colaboradores que fazem aniversário este mês:<br><br></strong>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
-        body += "<tr><th>Liderança</th><th>Colaboradores</th><th>Data</th><th>Setor</th></tr>"
+        body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th><th>Setor</th></tr>""" 
+
 
         funcionarios_ordenados = sorted(funcionarios, key=lambda x: self._converter_data(x[1]))
         for funcionario, dia_mes_nascimento, local in funcionarios_ordenados:
-                body += f"<tr><td>{supervisor}</td><td>{funcionario}</td><td>{dia_mes_nascimento}</td><td>{local}</td></tr>"
+            body += f"<tr><td>{funcionario}</td><td>{dia_mes_nascimento}</td><td>{local}</td></tr>"
         body += "</table><br>"
         body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
