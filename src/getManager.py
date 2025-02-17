@@ -30,7 +30,7 @@ class Manager:
         self.hoje = datetime.now().strftime("%d/%m")
         mes_nascimento = data_nascimento.strftime("%m")
         dia_mes_nascimento = data_nascimento.strftime("%d/%m")
-        self.email_teste = ["jhonny.souza@fgmdentalgroup.com","vanessa.boing@fgmdentalgroup.com"] #-------------------------- QAS ------------------------
+        self.email_teste = ["jhonny.souza@fgmdentalgroup.com"] #-------------------------- QAS ------------------------
         email_supervisor = [f"{usuario}@fgmdentalgroup.com"]  # Email lista colaborador por lider mensal
         self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"] #Email lista mensal
         self.emailToday = ["gestaodepessoas@fgmdentalgroup.com","grupo.coordenadores@fgmdentalgroup.com","grupo.supervisores@fgmdentalgroup.com","grupo.gerentes@fgmdentalgroup.com"] #Email aniversario diario
@@ -91,8 +91,8 @@ class Manager:
     def _send_birthday_today_mail(self, aniversariantes, data_aniversario):
         if  self.hoje in data_aniversario:
         
-            # email_morning = self.emailToday       #---------------------PRD-----------------------------
-            email_morning = self.email_teste    #---------------------QAS-----------------------------
+            email_morning = self.emailToday       #---------------------PRD-----------------------------
+            # email_morning = self.email_teste    #---------------------QAS-----------------------------
             subject = f'Aniversariantes do dia'
             body = self._generate_dayling_email_body(aniversariantes)
             logging.info(f"--------------Informações do Envio de Email--------------")
@@ -105,13 +105,13 @@ class Manager:
 
     def _send_mail_rh(self, aniversariantes_mes):
         mesStart = datetime.now().month
-        diaFixo = 14
+        diaFixo = 17
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         hoje = datetime.now().strftime("%d/%m")
         if hoje == diaStart:
-            email_rh = self.email_teste  # ---------------------QAS-----------------------------
-            # email_rh = self.email_rh_list  # ---------------------PRD-----------------------------
+            # email_rh = self.email_teste  # ---------------------QAS-----------------------------
+            email_rh = self.email_rh_list  # ---------------------PRD-----------------------------
             mes_atual = datetime.now() + relativedelta(months=1)
             mes_atual = mes_atual.strftime("%B").title()
             subject = f'Aniversariantes do mês de {mes_atual}'
@@ -124,14 +124,14 @@ class Manager:
         count = 0
         hoje = datetime.now().strftime("%d/%m")
         mesStart = datetime.now().month
-        diaFixo = 14   
+        diaFixo = 17   
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         if hoje == diaStart:
             for supervisor, info in aniversariantes_mes.items(): 
                 count += 1
-                emailSupervisor = self.email_teste    #---------------------QAS-----------------------------
-                # emailSupervisor = info["email"]       #---------------------PRD-----------------------------
+                # emailSupervisor = self.email_teste    #---------------------QAS-----------------------------
+                emailSupervisor = info["email"]       #---------------------PRD-----------------------------
                 funcionarios = info["funcionarios"]     
                 mes_atual = datetime.now() + relativedelta(months=1)
                 mes_atual = mes_atual.strftime("%B").title()
