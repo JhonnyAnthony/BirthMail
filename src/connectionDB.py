@@ -168,3 +168,51 @@ class Database:
             logging.info("Database connection closed.")
             logging.info("------------------------------------------------------------------------------------")
         return row_data_list
+    
+    def query2(self):
+        if self.connection is None:
+            logging.error("No database connection established.")
+            return []
+        row_data_list = []
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute("""
+                            SELECT
+                                *
+                            FROM
+                                (
+                                SELECT
+                                    FUN.SITAFA AS SITAFA,-- Situação
+                                    FUN.DATADM AS DATADM,-- Data Admissão
+                                    FUN.DATAFA AS DATAFA,-- Data Demissao
+                                    FUN.NOMFUN AS NOMFUN,-- Nome completo
+                                    EM.EMAPAR AS EMAPAR,-- Email pessoal
+                                    USU.NOMUSU AS NOMUSU,-- Usuário
+                                    ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
+                                FROM
+                                    senior.R034FUN FUN
+                                    INNER JOIN senior.R034CPL EM ON FUN.NUMCAD = EM.NUMCAD
+                                    LEFT JOIN senior.R034USU FUS ON FUN.NUMEMP = FUS.NUMEMP AND FUN.TIPCOL = FUS.TIPCOL AND FUN.NUMCAD = FUS.NUMCAD
+                                    LEFT JOIN senior.R999USU USU ON FUS.CODUSU = USU.CODUSU
+                                WHERE
+                                    FUN.TIPCOL = '1'
+                                    
+                                )
+                            WHERE RN = 1
+                            """)
+            RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
+            rows = self.cursor.fetchall()
+            for row in rows:
+                row_data_object = RowData(*row)
+                row_data_list.append(row_data_object)
+            logging.info("Query executed successfully.")
+        except oracledb.DatabaseError as e:
+            logging.error("Error executing query: %s", e)
+        finally:
+            if self.cursor:
+                self.cursor.close()
+            if self.connection:
+                self.connection.close()
+            logging.info("Database connection closed.")
+            logging.info("------------------------------------------------------------------------------------")
+        return row_data_list
