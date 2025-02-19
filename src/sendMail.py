@@ -11,19 +11,16 @@ class SendMail:
         self.db.connectData()
     
     def send_birthday_emails(self):
-        resultados = self.db.query()  # Armazena dados dos Usuários
+        resultados = self.db.query_principal()  # Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados:  # Loop para verificar todos os Usuários
             self._process_user(resultado, seen)
 
     def _process_user(self, resultado, seen):
-        nomeSuperior = resultado.NOMESUP
         datAdm = resultado.DATADM
         nomeFun = resultado.NOMFUN
-    
-
-        if nomeSuperior and nomeFun:
-            self.nomeSup = nomeSuperior.title()
+        # print(nomeFun)
+        if  nomeFun:
             self.nomeCompleto = nomeFun.title()
 
         numCad = resultado.NUMCAD
@@ -43,16 +40,15 @@ class SendMail:
         self.emailPessoal = resultado.EMAPAR
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
-
         if data_admissao == hojeAdm:
-            self._send_welcome_mail(seen)
             logging.info("--------------Informações de Bem Vindo--------------")
             logging.info(f"Bem Vindo {self.nomeCompleto}")
-        elif data_nascimento == hoje:
+            # self._send_welcome_mail(seen)
+        if data_nascimento == '18/02' and self.nomeUsuario == 'alexsandro.santos' :
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
+            print(self.nomeCompleto, self.emailPessoal)
             self._send_birthday_email(seen)
-
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
@@ -70,7 +66,7 @@ class SendMail:
             email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             seen.add(self.nomeUsuario)
-            subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
+            subject = f'Feliz Aniversário {self.nomeCompleto}!'
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
             self._send_email(email,subject,body)
 
