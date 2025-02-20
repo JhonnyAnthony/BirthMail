@@ -40,7 +40,7 @@ class BithMail:
 if __name__ == "__main__":
     start = SendMail()
     start.send_birthday_emails()
-    manager = Manager()
-    manager.connectionDB()
-    manager.birthMonth()
+    # manager = Manager()
+    # manager.connectionDB()
+    # manager.birthMonth()
     

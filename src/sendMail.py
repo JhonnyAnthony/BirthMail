@@ -11,16 +11,18 @@ class SendMail:
         self.db.connectData()
     
     def send_birthday_emails(self):
-        resultados = self.db.query()  # Armazena dados dos Usuários
+        resultados = self.db.query_principal()  # Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados:  # Loop para verificar todos os Usuários
             self._process_user(resultado,seen)
+
 
     def _process_user(self, resultado,seen):
         datAdm = resultado.DATADM
         nomeFun = resultado.NOMFUN
         RN = resultado.RN
         if nomeFun:
+
             self.nomeCompleto = nomeFun.title()
         situacao = resultado.SITAFA
         numCad = resultado.NUMCAD
@@ -41,7 +43,6 @@ class SendMail:
         self.emailPessoal = resultado.EMAPAR
         self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
 
-
         if data_admissao == hojeAdm:
             logging.info("--------------Informações de Bem Vindo--------------")
             # logging.info(f"Bem Vindo {self.nomeCompleto}")
@@ -52,6 +53,7 @@ class SendMail:
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
             print(F"{self.nomeCompleto}, ({self.emailPessoal}), {situacao}, {RN}")
             # self._send_birthday_email(seen)
+
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
@@ -70,7 +72,9 @@ class SendMail:
             seen.add(self.nomeUsuario)
             email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
-            subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
+            seen.add(self.nomeUsuario)
+            subject = f'Feliz Aniversário {self.nomeCompleto}!'
+
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
             self._send_email(email,subject,body)
 

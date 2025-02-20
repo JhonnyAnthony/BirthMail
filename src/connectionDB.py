@@ -34,7 +34,7 @@ class Database:
         except oracledb.DatabaseError as e:
             logging.error("Error establishing connection: %s", e)
 
-    def query(self):
+    def query_principal(self):
         if self.connection is None:
             logging.error("No database connection established.")
             return []
@@ -154,47 +154,8 @@ class Database:
                 )
                 WHERE RN in (1)
             """)
-            RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
-            rows = self.cursor.fetchall()
-            for row in rows:
-                row_data_object = RowData(*row)
-                row_data_list.append(row_data_object)
-            logging.info("Query executed successfully.")
-        except oracledb.DatabaseError as e:
-            logging.error("Error executing query: %s", e)
-        finally:
-            if self.cursor:
-                self.cursor.close()
-            if self.connection:
-                self.connection.close()
-            logging.info("Database connection closed.")
-            logging.info("------------------------------------------------------------------------------------")
-        return row_data_list
-    def R034FUN(self):
-        if self.connection is None:
-            logging.error("No database connection established.")
-            return []
-        row_data_list = []
-        try:
-            self.cursor = self.connection.cursor()
-            self.cursor.execute("""
-                SELECT
-                    FUN.NUMEMP AS NUMEMP,
-                    FUN.SITAFA AS SITAFA,
-                    FUN.NUMCAD AS NUMCAD,
-                    FUN.DATADM AS DATADM,
-                    FUN.DATNAS AS DATNAS,
-                    FUN.NOMFUN AS NOMFUN,
-                    FUN.CODCAR AS CODCAR,
-                    FUN.NUMLOC AS NUMLOC,
-                    FUN.TIPCOL as TIPCOL,
-                    FUN.POSTRA
-                FROM
-                    senior.R034FUN FUN
-                WHERE 
-                    FUN.SITAFA != 7
-                    AND FUN.TIPCOL = '1'
-            """)
+
+            
             RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
             rows = self.cursor.fetchall()
             for row in rows:
@@ -207,31 +168,115 @@ class Database:
             if self.cursor:
                 self.cursor.close()
             logging.info("Cursor closed.")
+        return row_data_list        
+    
+
+    def query_idepos(self, ESTPOS, POSTRA):
+        if self.connection is None:
+            logging.error("No database connection established.")
+            return None
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute("""
+                SELECT Z.IDEPOS
+                FROM senior.R017HIE Z
+                WHERE Z.ESTPOS = :estpos
+                AND ROWNUM <= 1
+                AND Z.POSPOS = (
+                    SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                    FROM senior.R017HIE HIE
+                    WHERE HIE.ESTPOS = :estpos
+                    AND HIE.POSTRA = :postra
+                    AND ROWNUM <= 1
+                ) AS IDEPOS,
+            """, estpos=ESTPOS, postra=POSTRA)
+            row = self.cursor.fetchone()
+            logging.info("Query executed successfully.")
+            return row[0] if row else None
+
+        except oracledb.DatabaseError as e:
+            logging.error("Error executing query: %s", e)
+        finally:
+            if self.cursor:
+                self.cursor.close()
+            logging.info("Cursor closed.")
+
         return row_data_list
 
-    def R034CPL(self, NUMEMP, TIPCOL, NUMCAD):
+    def query_nomesup(self, ESTPOS, POSTRA):
         if self.connection is None:
             logging.error("No database connection established.")
+            return None
         try:
             self.cursor = self.connection.cursor()
             self.cursor.execute("""
-                SELECT
-                    EM.EMAPAR AS EMAPAR
-                FROM
-                    SENIOR.R034CPL EM
-                WHERE 	
-                    EM.NUMEMP = :numemp
-                    AND EM.TIPCOL = :tipcol
-                    AND EM.NUMCAD = :numcad
-            """, numemp=NUMEMP, tipcol=TIPCOL, numcad=NUMCAD)
-            rows = self.cursor.fetchone()
+                SELECT K.NOMFUN
+                FROM senior.R034FUN K
+                WHERE ROWNUM = 1
+                AND K.SITAFA <> 7
+                AND K.ESTPOS = :estpos
+                AND K.POSTRA = (
+                    SELECT Z.POSTRA
+                    FROM senior.R017HIE Z
+                    WHERE Z.ESTPOS = :estpos
+                    AND ROWNUM <= 1
+                    AND Z.POSPOS = (
+                        SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                        FROM senior.R017HIE HIE
+                        WHERE HIE.ESTPOS = :estpos
+                        AND HIE.POSTRA = :postra
+                        AND ROWNUM <= 1
+                    )
+                ) AS NOMESUP,
+            """, estpos=ESTPOS, postra=POSTRA)
+            row = self.cursor.fetchone()
             logging.info("Query executed successfully.")
-            for row in rows:
-                return row
+            return row[0] if row else None
+
         except oracledb.DatabaseError as e:
             logging.error("Error executing query: %s", e)
         finally:
             if self.cursor:
                 self.cursor.close()
             logging.info("Cursor closed.")
-            
+
+
+    def query_usersup(self, ESTPOS, POSTRA):
+        if self.connection is None:
+            logging.error("No database connection established.")
+            return None
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute("""
+                SELECT SUP.NOMUSU
+                FROM senior.R034FUN K
+                INNER JOIN senior.R034USU F ON K.NUMEMP = F.NUMEMP AND K.TIPCOL = F.TIPCOL AND K.NUMCAD = F.NUMCAD
+                INNER JOIN senior.R999USU SUP ON F.CODUSU = SUP.CODUSU
+                WHERE ROWNUM = 1
+                AND K.SITAFA <> 7
+                AND K.ESTPOS = :estpos
+                AND K.POSTRA = (
+                    SELECT Z.POSTRA
+                    FROM senior.R017HIE Z
+                    WHERE Z.ESTPOS = :estpos
+                    AND ROWNUM <= 1
+                    AND Z.POSPOS = (
+                        SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                        FROM senior.R017HIE HIE
+                        WHERE HIE.ESTPOS = :estpos
+                        AND HIE.POSTRA = :postra
+                        AND ROWNUM <= 1
+                    )
+                )
+            """, estpos=ESTPOS, postra=POSTRA)
+            row = self.cursor.fetchone()
+            logging.info("Query executed successfully.")
+            return row[0] if row else None
+        except oracledb.DatabaseError as e:
+            logging.error("Error executing query: %s", e)
+        finally:
+            if self.cursor:
+                self.cursor.close()
+            logging.info("Cursor closed.")
+
+    
