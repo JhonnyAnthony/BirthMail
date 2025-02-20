@@ -14,21 +14,19 @@ class SendMail:
         resultados = self.db.query()  # Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados:  # Loop para verificar todos os Usuários
-            self._process_user(resultado, seen)
+            self._process_user(resultado,seen)
 
-    def _process_user(self, resultado, seen):
-        nomeSuperior = resultado.NOMESUP
+    def _process_user(self, resultado,seen):
         datAdm = resultado.DATADM
         nomeFun = resultado.NOMFUN
-    
-
-        if nomeSuperior and nomeFun:
-            self.nomeSup = nomeSuperior.title()
+        RN = resultado.RN
+        if nomeFun:
             self.nomeCompleto = nomeFun.title()
-
+        situacao = resultado.SITAFA
         numCad = resultado.NUMCAD
         dataNas = resultado.DATNAS
         self.nomeUsuario = resultado.NOMUSU
+        # print(self.nomeUsuario)
         hoje = datetime.now().strftime("%d/%m")
         hojeAdm = datetime.now().strftime("%d/%m/%y")
 
@@ -45,13 +43,15 @@ class SendMail:
 
 
         if data_admissao == hojeAdm:
-            self._send_welcome_mail(seen)
             logging.info("--------------Informações de Bem Vindo--------------")
-            logging.info(f"Bem Vindo {self.nomeCompleto}")
+            # logging.info(f"Bem Vindo {self.nomeCompleto}")
+            # self._send_welcome_mail(seen)
+        # elif data_nascimento == hoje and self.nomeUsuario == 'daniel.lucas':
         elif data_nascimento == hoje:
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
-            self._send_birthday_email(seen)
+            print(F"{self.nomeCompleto}, ({self.emailPessoal}), {situacao}, {RN}")
+            # self._send_birthday_email(seen)
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
@@ -60,16 +60,16 @@ class SendMail:
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
             body = self._generate_email_body(pictureNew, 'ImageWelcome')
-            self._send_email(email,subject,body)
+            # self._send_email(email,subject,body)
 
 
     def _send_birthday_email(self, seen):
         if self.emailPessoal == ' ':
             self.emailPessoal = self.email_corporativo
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
+            seen.add(self.nomeUsuario)
             email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
-            seen.add(self.nomeUsuario)
             subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
             self._send_email(email,subject,body)
