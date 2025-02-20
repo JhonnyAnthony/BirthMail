@@ -24,7 +24,7 @@ class Manager:
 
     def _process_user(self, data):
         try:
-            logging.info("Processing user data: %s", data)
+            self.situacao = data.SITAFA
             local = data.NOMLOCAL
             usuario = data.USERSUP if hasattr(data, 'USERSUP') else None
             if usuario == 'bianca':
@@ -36,7 +36,7 @@ class Manager:
             mes_nascimento = data_nascimento.strftime("%m")
             dia_mes_nascimento = data_nascimento.strftime("%d/%m")
             self.email_teste = ["jhonny.souza@fgmdentalgroup.com"]  # QAS
-            email_supervisor = [f"{usuario}@fgmdentalgroup.com"]  # Email lista colaborador por líder mensal
+            email_supervisor = [f"{data.EMAILSUP}"]  # Email lista colaborador por líder mensal
             self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"]  # Email lista mensal
             self.emailToday = ["gestaodepessoas@fgmdentalgroup.com", "grupo.coordenadores@fgmdentalgroup.com", "grupo.supervisores@fgmdentalgroup.com", "grupo.gerentes@fgmdentalgroup.com"]  # Email aniversário diário
 
@@ -103,7 +103,7 @@ class Manager:
             self._send_birth_superior_mail(aniversariantes_mes)
                     
     def _send_birthday_today_mail(self, aniversariantes, data_aniversario):
-        if  '20/02' in data_aniversario:
+        if  '21/02' in data_aniversario :
         
             # email_morning = self.emailToday       #---------------------PRD-----------------------------
             email_morning = self.email_teste    #---------------------QAS-----------------------------
@@ -137,14 +137,14 @@ class Manager:
         count = 0
         hoje = datetime.now().strftime("%d/%m")
         mesStart = datetime.now().month
-        diaFixo = 27   
+        diaFixo = 20   
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         if hoje == diaStart:
             for supervisor, info in aniversariantes_mes.items(): 
                 count += 1
-                emailSupervisor = self.email_teste    #---------------------QAS-----------------------------
-                # emailSupervisor = info["email"]       #---------------------PRD-----------------------------
+                # emailSupervisor = self.email_teste    #---------------------QAS-----------------------------
+                emailSupervisor = info["email"]       #---------------------PRD-----------------------------
                 funcionarios = info["funcionarios"]     
                 mes_atual = datetime.now() + relativedelta(months=1)
                 mes_atual = mes_atual.strftime("%B").title()
@@ -188,7 +188,7 @@ class Manager:
         todos_aniversariantes = []
         for supervisor, info in aniversariantes.items():
             for funcionario, dia_mes_nascimento, local in info["funcionarios"]:
-                if dia_mes_nascimento == '20/02':
+                if dia_mes_nascimento == '21/02' :
                     todos_aniversariantes.append((funcionario, dia_mes_nascimento, local))
 
         # Ordene todos os aniversariantes por nome do colaborador

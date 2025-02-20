@@ -25,7 +25,8 @@ class SendMail:
 
             self.nomeCompleto = nomeFun.title()
         situacao = resultado.SITAFA
-        numCad = resultado.NUMCAD
+        self.email_corporativo = resultado.EMACOM
+        # print(self.email_corporativo)
         dataNas = resultado.DATNAS
         self.nomeUsuario = resultado.NOMUSU
         # print(self.nomeUsuario)
@@ -41,17 +42,16 @@ class SendMail:
         aniversarianteMes = dataNas.strftime("%m")
         mes = datetime.now().strftime("%m")
         self.emailPessoal = resultado.EMAPAR
-        self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
-
+        
         if data_admissao == hojeAdm:
             logging.info("--------------Informações de Bem Vindo--------------")
             # logging.info(f"Bem Vindo {self.nomeCompleto}")
             # self._send_welcome_mail(seen)
         # elif data_nascimento == hoje and self.nomeUsuario == 'daniel.lucas':
-        elif data_nascimento == hoje:
+        elif data_nascimento == '21/02' and situacao != 7 :
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
-            print(F"{self.nomeCompleto}, ({self.emailPessoal}), {situacao}, {RN}")
+            print(F"{self.nomeCompleto}, ({self.emailPessoal}), {situacao}")
             # self._send_birthday_email(seen)
 
 
@@ -71,12 +71,13 @@ class SendMail:
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
             email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
+            print(email)
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             seen.add(self.nomeUsuario)
             subject = f'Feliz Aniversário {self.nomeCompleto}!'
 
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
-            self._send_email(email,subject,body)
+            # self._send_email(email,subject,body)
 
     def _generate_email_body(self, image_src, alt_text, link=None):
         if link:

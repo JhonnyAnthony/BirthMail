@@ -15,7 +15,7 @@ class TempoCasa:
         locale.setlocale(locale.LC_TIME, 'pt_BR')  # Define a localidade para português do Brasil
 
     def connectionDB(self):
-        db_results = self.db_connection.query2()
+        db_results = self.db_connection.query_principal()
         for data in db_results:
             self._process_user(data)  # Processa cada registro de funcionário
 
@@ -23,6 +23,7 @@ class TempoCasa:
         data_adm = self._parse_date(data.DATADM)
         ano_adm = self._parse_date(data.DATADM)
         ano_dem = self._parse_date(data.DATADM)
+        self.situacao = data.SITAFA
         self.usuario = data.NOMUSU
         self.nomeCompleto = self._format_name(data.NOMFUN)
         self.email_pessoal = data.EMAPAR
@@ -42,8 +43,8 @@ class TempoCasa:
         teste = seisMeses.strftime('%d/%m/%Y')
         # if self.data_demissao <= teste:
             # print(f"teste, {self.nomeCompleto}")
-        if self.data_admissao == self.hoje:
-            anoCasa = int(self.ano_atual) - int(self.ano_admissao)
+        if self.data_admissao == self.hoje and self.situacao == 1:
+            self.anoCasa = int(self.ano_atual) - int(self.ano_admissao)
             
             funcoes = {
                 5: self.filtrar_aniversariantes_5_anos,
@@ -54,12 +55,12 @@ class TempoCasa:
                 30: self.filtrar_aniversariantes_30_anos
             }
             
-            funcao = funcoes.get(anoCasa)
+            funcao = funcoes.get(self.anoCasa)
             if funcao:
                 funcao()
             else:
                 self.filtrar_aniversariantes()
-                print(anoCasa)
+                # print(anoCasa)
                 # se for aniversário de empresa irá jogar para os filtros, para saber qual é
 
         
@@ -74,7 +75,7 @@ class TempoCasa:
    
     def filtrar_aniversariantes(self):
         self._send_mail_year    
-        print(f"aniversário de empresa DE {self.nomeCompleto}")
+        print(f"aniversário de empresa DE {self.nomeCompleto} completa {self.anoCasa} anos")
 
     def filtrar_aniversariantes_5_anos(self):
         self._send_mail_5_year

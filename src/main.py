@@ -14,9 +14,9 @@ class BithMail:
     def logs():
         nome_host = socket.gethostname()
         ip_local = socket.gethostbyname(nome_host)
-        log_directory = r"/home/fgm/Scripts/BirthMail/Logs" #path para ser colocado as Logs
-        # diretorioLocal = os.getcwd()
-        # log_directory = f"{diretorioLocal}/Logs" #path para ser colocado as Logs
+        # log_directory = r"/home/fgm/Scripts/BirthMail/Logs" #path para ser colocado as Logs
+        diretorioLocal = os.getcwd()
+        log_directory = f"{diretorioLocal}/Logs" #path para ser colocado as Logs
         
         
         if not os.path.exists(log_directory):
@@ -40,7 +40,7 @@ class BithMail:
 if __name__ == "__main__":
     start = SendMail()
     start.send_birthday_emails()
-    # manager = Manager()
-    # manager.connectionDB()
-    # manager.birthMonth()
+    manager = Manager()
+    manager.connectionDB()
+    manager.birthMonth()
     
