@@ -15,7 +15,7 @@ class TempoCasa:
         locale.setlocale(locale.LC_TIME, 'pt_BR')  # Define a localidade para português do Brasil
 
     def connectionDB(self):
-        db_results = self.db_connection.query_principal()
+        db_results = self.db_connection.query_tempoCasa()
         for data in db_results:
             self._process_user(data)  # Processa cada registro de funcionário
 
@@ -24,7 +24,6 @@ class TempoCasa:
         ano_adm = self._parse_date(data.DATADM)
         ano_dem = self._parse_date(data.DATADM)
         self.situacao = data.SITAFA
-        self.usuario = data.NOMUSU
         self.nomeCompleto = self._format_name(data.NOMFUN)
         self.email_pessoal = data.EMAPAR
         self.data_admissao = data_adm.strftime("%d/%m")
@@ -36,13 +35,15 @@ class TempoCasa:
         data_dem = self._parse_date(data.DATAFA)
         self.data_demissao = data_dem.strftime("%d/%m/%Y")
         if self.data_demissao == '31/12/1900':
-            breakpoint
+            next
         data_demissao_datetime = datetime.strptime(self.data_demissao, "%d/%m/%Y")
+        data_dias = relativedelta(months=6)
         # Subtrair 6 meses
-        seisMeses = data_demissao_datetime - relativedelta(months=6)
+        seisMeses = (data_demissao_datetime + data_dias).days
+        print (seisMeses)
         teste = seisMeses.strftime('%d/%m/%Y')
         # if self.data_demissao <= teste:
-            # print(f"teste, {self.nomeCompleto}")
+        #     print(f"teste, {self.nomeCompleto.upper()}")
         if self.data_admissao == self.hoje and self.situacao == 1:
             self.anoCasa = int(self.ano_atual) - int(self.ano_admissao)
             
