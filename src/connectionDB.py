@@ -49,6 +49,8 @@ class Database:
                 (
                 SELECT
                     FUN.SITAFA AS SITAFA,
+                    FUN.NUMCPF AS NUMCPF,
+                    FUN.NUMCAD AS NUMCAD,
                     FUN.DATNAS AS DATNAS,
                     FUN.DATADM AS DATADM,
                     FUN.DATAFA AS DATAFA,
@@ -107,6 +109,7 @@ class Database:
                 (
                 SELECT
                     FUN.SITAFA AS SITAFA,
+                    FUN.NUMCPF AS NUMCPF,
                     FUN.NUMCAD AS NUMCAD,
                     FUN.DATADM AS DATADM,
                     FUN.DATAFA AS DATAFA,
