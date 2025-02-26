@@ -19,14 +19,18 @@ class TempoCasa:
 
     def _process_user(self, data):
         data_adm = self._parse_date(data.DATADM).strftime("%d/%m/%Y")
+        aniversario = self._parse_date(data.DATADM).strftime("%d/%m")
         data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") if data.DATAFA != datetime(1900, 12, 31) else datetime.now().strftime("%d/%m/%Y")
         cpf = data.NUMCPF
-
+        
+        self.hoje = datetime.now().strftime("%d/%m")
         if cpf not in self.data:
             self.data[cpf] = {
                 'nome': data.NOMFUN,
                 'situacao': data.SITAFA,
                 'matriculas': [],
+                'data_admissao':data_adm,
+                'aniversario_empresa': aniversario,
                 'email_pessoal': data.EMAPAR,
                 'email_corporativo': data.EMACOM,
                 'admissoes': []
@@ -36,35 +40,26 @@ class TempoCasa:
         self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
         if data.SITAFA == 1:
-            self._check_anniversary(cpf, data.NOMFUN, data_adm)
+            self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario)
 
-    def _check_anniversary(self, cpf, nome, data_adm):
+    def _check_anniversary(self, cpf, nome, data_adm,aniversario):
         tempo_de_casa = self.calcular_tempo_de_casa(self.data[cpf]['admissoes'])
         data_atual = datetime.now()
-        hoje = datetime.now().strftime("%d/%m/%Y")
         primeiro_dia_proximo_mes = (data_atual.replace(day=28) + timedelta(days=4)).replace(day=1)
         ultimo_dia_mes_atual = primeiro_dia_proximo_mes - timedelta(days=1)
         ultimodia = int(ultimo_dia_mes_atual.strftime('%d'))
         anos = tempo_de_casa.days // 365
-        meses = (tempo_de_casa.days % 365) // ultimodia
-
-        # print(f"Aniversário de empresa de {nome.title()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mes'} | Data de Admissao: {data_adm}")
-        if anos >= 1 and data_adm == '03/06/2024':
-            print(f"Aniversário de empresa de {nome.title()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mes'} | Data de Admissao: {data_adm}")
-            self._apply_filters(anos, self.data[cpf])
+        meses = (tempo_de_casa.days % 365) // 30  # Assuming an average month length of 30 days
+        
+        if anos >= 1 :
+            print(f"Aniversário de empresa de {nome.title()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} | Data de Admissão: {data_adm} ")
+            # self._apply_filters(anos, self.data[cpf])
 
     def _apply_filters(self, anos, info):
-        funcoes = {
-            5: self.filtrar_aniversariantes_5_anos,
-            10: self.filtrar_aniversariantes_10_anos,
-            15: self.filtrar_aniversariantes_15_anos,
-            20: self.filtrar_aniversariantes_20_anos,
-            25: self.filtrar_aniversariantes_25_anos,
-            30: self.filtrar_aniversariantes_30_anos
-        }
+        funcoes = {key: self._send_mail_star for key in (5, 10, 15, 20, 25, 30)}
 
         funcao = funcoes.get(anos, self.filtrar_aniversariantes)
-        funcao(info,anos)
+        funcao(info, anos)
     def calcular_tempo_de_casa(self, admissoes):
         admissoes.sort(key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
         if len(admissoes) > 1:
@@ -74,93 +69,52 @@ class TempoCasa:
 
             if diferenca_tempo < timedelta(days=180):
                 data_admissao_antiga = datetime.strptime(admissoes[-2][0], "%d/%m/%Y")
+                if data_admissao_antiga > datetime.now():
+                    return timedelta(0)
                 return datetime.now() - data_admissao_antiga
             else:
+                if data_admissao_nova > datetime.now():
+                    return timedelta(0)
                 return datetime.now() - data_admissao_nova
         else:
             data_admissao = datetime.strptime(admissoes[0][0], "%d/%m/%Y")
+            if data_admissao > datetime.now():
+                return timedelta(0)
             return datetime.now() - data_admissao
-
     def _parse_date(self, date_str):
         return date_str if isinstance(date_str, datetime) else datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
     def filtrar_aniversariantes(self, info, anos):
-        self._send_mail_year()
-        print(f"Aniversário de empresa de {info['nome'].title()} completa {anos} {'anos' if anos > 1 else 'ano'}")
+        print(f"Filtrando aniversariantes para {anos} anos")  # Adicione esta linha
+        self._send_mail_year(info, anos)
 
-    def filtrar_aniversariantes_5_anos(self, info):
-        self._send_mail_5_year()
-        print(f"Aniversário de empresa de 5 anos de {info['nome'].title()}")
+    def _send_mail_year(self, info, anos):
+        # if self.hoje == info['aniversario_empresa']:
+            email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
+            subject = f'Parabéns pelos {anos} anos de Casa {info['nome'].title()}!'
+            body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth', None) #-----
+            logging.info(f'Aniversáriantes da Empresa de {self.hoje} Enviada para {email}')
+            self._send_email(email, subject, body)
 
-    def filtrar_aniversariantes_10_anos(self, info):
-        self._send_mail_10_year()
-        print(f"Aniversário de empresa de 10 anos de {info['nome'].title()}")
-
-    def filtrar_aniversariantes_15_anos(self, info):
-        self._send_mail_15_year()
-        print(f"Aniversário de empresa de 15 anos de {info['nome'].title()}")
-
-    def filtrar_aniversariantes_20_anos(self, info):
-        self._send_mail_20_year()
-        print(f"Aniversário de empresa de 20 anos de {info['nome'].title()}")
-
-    def filtrar_aniversariantes_25_anos(self, info):
-        self._send_mail_25_year()
-        print(f"Aniversário de empresa de 25 anos de {info['nome'].title()}")
-
-    def filtrar_aniversariantes_30_anos(self, info):
-        self._send_mail_30_year()
-        print(f"Aniversário de empresa de 30 anos de {info['nome'].title()}")
-
-    def _send_mail_year(self):
-        print("Enviando email de aniversário de empresa")
-
-    def _send_mail_5_year(self):
-        print("Enviando email de 5 anos de empresa")
-
-    def _send_mail_10_year(self):
-        print("Enviando email de 10 anos de empresa")
-
-    def _send_mail_15_year(self):
-        print("Enviando email de 15 anos de empresa")
-
-    def _send_mail_20_year(self):
-        print("Enviando email de 20 anos de empresa")
-
-    def _send_mail_25_year(self):
-        print("Enviando email de 25 anos de empresa")
-
-    def _send_mail_30_year(self):
-        print("Enviando email de 30 anos de empresa")
-    def _generate_1_year_body(self):
-        body = f"<strong>Aniversário 1 ano de empresa<br><br></strong>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
-    def _generate_5_year_body(self):
-        body = f"<strong>Aniversário 5 ano de empresa<br><br></strong>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
-    def _generate_10_year_body(self):
-        body = f"<strong>Aniversário 10 ano de empresa<br><br></strong>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
-    def _generate_15_year_body(self):
-        body = f"<strong>Aniversário 15 ano de empresa<br><br></strong>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
-    def _generate_20_year_body(self):
-        body = f"<strong>Aniversário 20 ano de empresa<br><br></strong>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
-    def _generate_25_year_body(self):
-        body = f"<strong>Aniversário 25 ano de empresa<br><br></strong>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
-    def _generate_30_year_body(self):
-        body = f"<strong>Aniversário 30 ano de empresa<br><br></strong>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
-
+    def _send_mail_star(self, info, anos):
+        # if self.hoje == info['aniversario_empresa']:
+            email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
+            # email_rh = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            subject = f'Parabéns pelos {anos} anos de Casa {info['nome'].title()}!'
+            body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
+            print(f'Aniversáriantes da Empresa de {self.hoje} Enviada para {email}, {info["nome"]}')
+            self._send_email(email, subject, body)
+    def _generate_year_body(self,image_src, alt_text, link=None):
+        if link:
+            return f"""<html><br><body style="display: flex; justify-content: center; align-items: center;height: auto; margin: 0;">
+                        <a href="{link}" style="display: flex; justify-content: center; align-items: center;">
+                            <img src="{image_src}" alt="{alt_text}">
+                        </a></body></html>"""
+        else:
+            return f"""<html><br><body style="display: flex; justify-content: center; align-items: center;height: auto; margin: 0;">
+                        <a style="display: flex; justify-content: center; align-items: center;">
+                            <img src="{image_src}" alt="{alt_text}">
+                        </a></body></html>"""    
 
     def _send_email(self, email_to, subject, body):
         email_group = email_to
@@ -202,6 +156,6 @@ class TempoCasa:
         }
         response = requests.post(url, data=data)
         return response.json().get('access_token')
-if __name__ == "__main__":
+if __name__ == '__main__': 
     start = TempoCasa()
     start.connectionDB()

@@ -16,8 +16,7 @@ class Database:
             'user': user_data,
             'password': password_data
         }
-
-        # Check if environment variables are loaded
+        # Verifica se as variaveis de ambiente foram carregadas 
         if None in dsn.values():
             logging.error("Missing one or more environment variables.")
             return
@@ -28,9 +27,7 @@ class Database:
                 dsn=oracledb.makedsn(dsn['host'], dsn['port'], service_name=dsn['service_name'])
             )
             logging.info(f"--------------Informações da Database--------------")
-            logging.info("Database connection established successfully.")
-            
-
+            logging.info("Database connection established successfully.")           
         except oracledb.DatabaseError as e:
             logging.error("Error establishing connection: %s", e)
 
@@ -60,6 +57,8 @@ class Database:
                     USU.NOMUSU AS NOMUSU,
                     CAR.TITCAR AS TITCAR,
                     ORN.NOMLOC AS NOMLOCAL,
+                    FUN.ESTPOS AS ESTPOS,  -- Adicionando a coluna ESTPOS
+                    FUN.POSTRA AS POSTRA,  -- Adicionando a coluna POSTRA
                     ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
                 FROM
                     senior.R034FUN FUN
@@ -92,7 +91,7 @@ class Database:
             if self.cursor:
                 self.cursor.close()
             logging.info("Cursor closed.")
-        return row_data_list        
+        return row_data_list
     
     def query_tempoCasa(self):
         if self.connection is None:
@@ -158,7 +157,6 @@ class Database:
         try:
             self.cursor = self.connection.cursor()
             self.cursor.execute("""
-                (
                 SELECT K.NOMFUN
                 FROM senior.R034FUN K
                 WHERE ROWNUM = 1
@@ -176,19 +174,16 @@ class Database:
                         AND HIE.POSTRA = :postra
                         AND ROWNUM <= 1
                     )
-                ) AS NOMESUP,
+                )
             """, estpos=ESTPOS, postra=POSTRA)
             row = self.cursor.fetchone()
-            logging.info("Query executed successfully.")
             return row[0] if row else None
         except oracledb.DatabaseError as e:
             logging.error("Error executing query: %s", e)
         finally:
             if self.cursor:
                 self.cursor.close()
-            logging.info("Cursor closed.")
-
-    def query_usersup(self, ESTPOS, POSTRA):
+    def query_situacaosup(self, ESTPOS, POSTRA):
         if self.connection is None:
             logging.error("No database connection established.")
             return None
@@ -196,10 +191,8 @@ class Database:
             self.cursor = self.connection.cursor()
             self.cursor.execute("""
                 SELECT 
-                    SUP.NOMUSU
+                    K.SITAFA
                 FROM senior.R034FUN K
-                    INNER JOIN senior.R034USU F ON K.NUMEMP = F.NUMEMP AND K.TIPCOL = F.TIPCOL AND K.NUMCAD = F.NUMCAD
-                    INNER JOIN senior.R999USU SUP ON F.CODUSU = SUP.CODUSU
                 WHERE 
                     ROWNUM = 1
                     AND K.SITAFA <> 7
@@ -216,18 +209,16 @@ class Database:
                             AND HIE.POSTRA = :postra
                             AND ROWNUM <= 1
                         )
-                )AS USERSUP,
+                    )
             """, estpos=ESTPOS, postra=POSTRA)
             row = self.cursor.fetchone()
-            logging.info("Query executed successfully.")
             return row[0] if row else None
         except oracledb.DatabaseError as e:
             logging.error("Error executing query: %s", e)
         finally:
             if self.cursor:
                 self.cursor.close()
-            logging.info("Cursor closed.")
-
+        
     def query_mailsup(self, ESTPOS, POSTRA):
         if self.connection is None:
             logging.error("No database connection established.")
@@ -243,36 +234,30 @@ class Database:
                 WHERE
                     ROWNUM = 1
                     AND K.SITAFA <> 7
-                    AND K.ESTPOS = FUN.ESTPOS
+                    AND K.ESTPOS = :estpos
                     AND K.POSTRA = (
-                    SELECT
-                        Z.POSTRA
-                    FROM
-                        senior.R017HIE Z
-                    WHERE
-                        Z.ESTPOS = FUN.ESTPOS
-                        AND ROWNUM <= 1
-                        AND Z.POSPOS = (
-                            SELECT
-                            SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
-                            FROM
-                            senior.R017HIE HIE
-                            WHERE
-                            HIE.ESTPOS = FUN.ESTPOS
-                            AND HIE.POSTRA = FUN.POSTRA
+                        SELECT
+                            Z.POSTRA
+                        FROM
+                            senior.R017HIE Z
+                        WHERE                    
+                            Z.ESTPOS = :estpos
                             AND ROWNUM <= 1
+                            AND Z.POSPOS = (
+                                SELECT
+                                SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                                FROM
+                                senior.R017HIE HIE
+                                WHERE HIE.ESTPOS = :estpos
+                                AND HIE.POSTRA = :postra
+                                AND ROWNUM <= 1
                             )
                         )
-                ) AS EMAILSUP,
             """, estpos=ESTPOS, postra=POSTRA)
             row = self.cursor.fetchone()
-            logging.info("Query executed successfully.")
             return row[0] if row else None
         except oracledb.DatabaseError as e:
             logging.error("Error executing query: %s", e)
         finally:
             if self.cursor:
                 self.cursor.close()
-            logging.info("Cursor closed.")
-
-    

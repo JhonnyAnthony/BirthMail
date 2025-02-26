@@ -11,7 +11,7 @@ class NomeImagem:
         self.db.connectData()
 
     def send_birthday_emails(self):
-        resultados = self.db.query()  # Armazena dados dos Usuários
+        resultados = self.db.query_principal()  # Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados:  # Loop para verificar todos os Usuários
             self._process_user(resultado, seen)
@@ -22,10 +22,10 @@ class NomeImagem:
             self.nomeFun = resultado.NOMFUN  # Define o atributo nomeFun
             # Chamar o método que você deseja executar
             self.nomeUsuario = resultado.NOMUSU
-            self.teste()
+            self.Imagem()
 
-    def teste(self):
-        url = "https://fgmdentalgroup.com/wp-content/uploads/2025/01/boas-vindas-e1738075201142.jpg"
+    def Imagem(self):
+        url = "https://fgmdentalgroup.com/wp-content/uploads/2025/02/imagem.jpg"
 
         # Fazer o download da imagem
         response = requests.get(url, verify=False)
@@ -35,7 +35,7 @@ class NomeImagem:
         draw = ImageDraw.Draw(imagem)
 
         # Definir a fonte (você pode usar uma fonte TTF que esteja disponível no seu sistema)
-        fonte = ImageFont.truetype("arial.ttf", 40)
+        fonte = ImageFont.truetype("arial.ttf", 55)
 
         # Texto a ser adicionado
         texto = self.nomeFun
@@ -49,11 +49,11 @@ class NomeImagem:
             linhas = []
             linha_atual = ""
             for palavra in palavras:
-                linha_teste = linha_atual + " " + palavra if linha_atual else palavra
-                bbox = draw.textbbox((0, 0), linha_teste, font=fonte)
-                largura_teste = bbox[2] - bbox[0]
-                if largura_teste <= largura_maxima:
-                    linha_atual = linha_teste
+                linha_imagem = linha_atual + " " + palavra if linha_atual else palavra
+                bbox = draw.textbbox((0, 0), linha_imagem, font=fonte)
+                largura_imagem = bbox[2] - bbox[0]
+                if largura_imagem <= largura_maxima:
+                    linha_atual = linha_imagem
                 else:
                     linhas.append(linha_atual)
                     linha_atual = palavra
@@ -65,7 +65,7 @@ class NomeImagem:
         linhas = quebra_texto(texto, largura_img - 40, draw, fonte)  # largura_img - 40 para margem
 
         # Fixar a posição vertical do texto
-        posicao_y_fixa = 380  # Defina aqui a posição vertical fixa
+        posicao_y_fixa = 160  # Defina aqui a posição vertical fixa
 
         # Cor do texto (R, G, B)
         cor_do_texto = (255, 255, 255)
@@ -85,6 +85,6 @@ class NomeImagem:
 
 # Exemplo de uso
 nome_imagem = NomeImagem()
-resultados = nome_imagem.db.query()  # Assume-se que a consulta já está correta
+resultados = nome_imagem.db.query_principal()  # Assume-se que a consulta já está correta
 for resultado in resultados:
     nome_imagem._process_user(resultado, set())

@@ -3,9 +3,9 @@ import logging
 from datetime import datetime
 from connectionDB import Database
 from sendMail import SendMail
+from tempoCasa import TempoCasa
 from getManager import Manager
 import socket
-import getpass
 class BithMail:
     def __init__(self):
         self.db = Database()
@@ -38,8 +38,10 @@ class BithMail:
     logs()
     
 if __name__ == "__main__":
-    start = SendMail()
-    start.send_birthday_emails()
+    # start = SendMail()
+    # start.send_birthday_emails()
+    # start = TempoCasa()
+    # start.connectionDB()
     manager = Manager()
     manager.connectionDB()
     manager.birthMonth()

@@ -13,6 +13,8 @@ password_data=os.getenv('password')
 pictureBirth = os.getenv('PICTUREBIRTH')
 pictureNew = os.getenv('PICTURENEW')
 linkRedirect= os.getenv('LINKREDIRECT')
+
+
 #API
 scope = os.getenv("SCOPE")
 tenant_id = os.getenv("TENANT_ID")

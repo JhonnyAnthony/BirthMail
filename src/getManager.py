@@ -31,12 +31,16 @@ class Manager:
                 usuario = "aline.mira"
             data_nascimento = self._parse_date(data.DATNAS)
             nome_funcionario = self._format_name(data.NOMFUN)
-            nome_supervisor = self._format_name(data.NOMESUP)
             self.hoje = datetime.now().strftime("%d/%m")
             mes_nascimento = data_nascimento.strftime("%m")
             dia_mes_nascimento = data_nascimento.strftime("%d/%m")
             self.email_teste = ["jhonny.souza@fgmdentalgroup.com"]  # QAS
-            email_supervisor = [f"{data.EMAILSUP}"]  # Email lista colaborador por líder mensal
+            # Chamando as funções para obter os dados dos supervisores
+            estpos = data.ESTPOS
+            postra = data.POSTRA
+            email_supervisor = [self.db_connection.query_mailsup(estpos, postra)]
+            nome_supervisor = self.db_connection.query_nomesup(estpos, postra)
+            # usuario_supervisor = self.db_connection.query_usersup(estpos, postra)
             self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"]  # Email lista mensal
             self.emailToday = ["gestaodepessoas@fgmdentalgroup.com", "grupo.coordenadores@fgmdentalgroup.com", "grupo.supervisores@fgmdentalgroup.com", "grupo.gerentes@fgmdentalgroup.com"]  # Email aniversário diário
 
@@ -46,15 +50,6 @@ class Manager:
                 self.supervisores[nome_supervisor]["funcionarios"].append((nome_funcionario, mes_nascimento, dia_mes_nascimento, local))
         except Exception as e:
             logging.error("Error processing user data: %s", e)
-    def _parse_date(self, date_str):
-        try:
-            return datetime.strptime(date_str, "%Y-%m-%d")
-        except ValueError as e:
-            logging.error("Error parsing date: %s", e)
-            return None
-
-    def _format_name(self, name):
-        return name.strip().title() if name else None
     def _format_name(self, name):
         return ' '.join([word.capitalize() for word in name.split()]) if name else ""
 
@@ -73,9 +68,10 @@ class Manager:
                         aniversariantes[supervisor] = {"funcionarios": [], "email": info["email"]}
                     aniversariantes[supervisor]["funcionarios"].append((funcionario, dia_mes_nascimento, local))
         return aniversariantes
+
     def filtrar_aniversariantes_do_mes_seguinte(self):
         aniversariantes_mes = {}
-        mes_seguinte = datetime.now() +  relativedelta(months=1)
+        mes_seguinte = datetime.now() + relativedelta(months=1)
         mes_seguinte = mes_seguinte.strftime("%m")
         for supervisor, info in self.supervisores.items():
             for funcionario, mes_nascimento, dia_mes_nascimento, local in info["funcionarios"]:
@@ -103,15 +99,14 @@ class Manager:
             self._send_birth_superior_mail(aniversariantes_mes)
                     
     def _send_birthday_today_mail(self, aniversariantes, data_aniversario):
-        if  '21/02' in data_aniversario :
-        
+        if  self.hoje in data_aniversario :
             # email_morning = self.emailToday       #---------------------PRD-----------------------------
             email_morning = self.email_teste    #---------------------QAS-----------------------------
             subject = f'Aniversariantes do dia'
             body = self._generate_dayling_email_body(aniversariantes)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
-            # print("Email Aniversário Diário")
+            print("Email Aniversário Diário")
             self._send_email(email_morning, subject, body)
         else: 
             logging.info(f"--------------Informações do Envio de Email--------------")
@@ -119,7 +114,7 @@ class Manager:
 
     def _send_mail_rh(self, aniversariantes_mes):
         mesStart = datetime.now().month
-        diaFixo = 27
+        diaFixo = 26
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         hoje = datetime.now().strftime("%d/%m")
@@ -131,20 +126,21 @@ class Manager:
             subject = f'Aniversariantes do mês de {mes_atual}'
             body = self._generate_rh_email_body(aniversariantes_mes)
             logging.info(f'Lista de Aniversáriantes do Mes de {mes_atual} Enviada para {email_rh}')
-            # self._send_email(email_rh, subject, body)
+            self._send_email(email_rh, subject, body)
+
 
     def _send_birth_superior_mail(self, aniversariantes_mes): 
         count = 0
         hoje = datetime.now().strftime("%d/%m")
         mesStart = datetime.now().month
-        diaFixo = 20   
+        diaFixo = 26  
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = (data_fixa.strftime("%d/%m"))
         if hoje == diaStart:
             for supervisor, info in aniversariantes_mes.items(): 
                 count += 1
-                # emailSupervisor = self.email_teste    #---------------------QAS-----------------------------
-                emailSupervisor = info["email"]       #---------------------PRD-----------------------------
+                emailSupervisor = self.email_teste    #---------------------QAS-----------------------------
+                # emailSupervisor = info["email"]       #---------------------PRD-----------------------------
                 funcionarios = info["funcionarios"]     
                 mes_atual = datetime.now() + relativedelta(months=1)
                 mes_atual = mes_atual.strftime("%B").title()
@@ -152,7 +148,7 @@ class Manager:
                 body = self._generate_supervisor_email_body(supervisor, funcionarios) # Gera o corpo do e-mail 
                 logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_atual}')
                 print(f"Contagem: {count}")
-                # self._send_email(emailSupervisor, subject, body) # Envia o e-mail
+                self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     def _converter_data(self, data_str):
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
     
@@ -203,7 +199,7 @@ class Manager:
         return body
 
     def _generate_supervisor_email_body(self, supervisor, funcionarios):
-        body = f"<strong>Olá {supervisor}. Segue a lista de colaboradores que fazem aniversário este mês:<br><br></strong>"
+        body = f"<strong>Olá {supervisor.title()}. Segue a lista de colaboradores que fazem aniversário este mês:<br><br></strong>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
         body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th><th>Setor</th></tr>""" 
 
