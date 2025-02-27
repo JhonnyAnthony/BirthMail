@@ -30,6 +30,7 @@ class TempoCasa:
                 'situacao': data.SITAFA,
                 'matriculas': [],
                 'data_admissao':data_adm,
+                'data_demissao':data_dem,
                 'aniversario_empresa': aniversario,
                 'email_pessoal': data.EMAPAR,
                 'email_corporativo': data.EMACOM,
@@ -37,23 +38,31 @@ class TempoCasa:
             }
 
         self.data[cpf]['matriculas'].append((data_adm, data_dem))
-        self.data[cpf]['admissoes'].append((data_adm, data_dem))
+        teste = self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
         if data.SITAFA == 1:
             self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario)
 
     def _check_anniversary(self, cpf, nome, data_adm,aniversario):
-        tempo_de_casa = self.calcular_tempo_de_casa(self.data[cpf]['admissoes'])
+        admissoes = self.data[cpf]['admissoes']
+        tempo_de_casa = self.calcular_tempo_de_casa(admissoes)
         data_atual = datetime.now()
         primeiro_dia_proximo_mes = (data_atual.replace(day=28) + timedelta(days=4)).replace(day=1)
         ultimo_dia_mes_atual = primeiro_dia_proximo_mes - timedelta(days=1)
         ultimodia = int(ultimo_dia_mes_atual.strftime('%d'))
         anos = tempo_de_casa.days // 365
-        meses = (tempo_de_casa.days % 365) // 30  # Assuming an average month length of 30 days
-        
-        if anos >= 1 :
+        meses = (tempo_de_casa.days % 365) // ultimodia  # Assuming an average month length of 30 days
+        admissoes.sort(key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
+        data_admissao_antiga = None
+        data_demissao_antiga = None
+        if len(admissoes) > 1:
+            data_admissao_antiga = datetime.strptime(admissoes[-2][0], "%d/%m/%Y").strftime("%d/%m/%Y")
+            data_demissao_antiga = datetime.strptime(admissoes[-2][1], "%d/%m/%Y").strftime("%d/%m/%Y")
+        if anos == 5 or anos == 10 or anos == 15 or anos == 20 or anos == 25 or anos == 30:
+        # print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} | Data de Admissão: {data_adm}{' Data de Admissão Antiga: ' + data_admissao_antiga  if data_admissao_antiga  else ''}{' Data de Demissao Antiga: ' + data_demissao_antiga  if data_demissao_antiga  else ''}")
+        # if anos > 1:
             print(f"Aniversário de empresa de {nome.title()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} | Data de Admissão: {data_adm} ")
-            # self._apply_filters(anos, self.data[cpf])
+            self._apply_filters(anos, self.data[cpf])
 
     def _apply_filters(self, anos, info):
         funcoes = {key: self._send_mail_star for key in (5, 10, 15, 20, 25, 30)}
@@ -75,7 +84,7 @@ class TempoCasa:
             else:
                 if data_admissao_nova > datetime.now():
                     return timedelta(0)
-                return datetime.now() - data_admissao_nova
+                return datetime.now() - data_admissao_nova 
         else:
             data_admissao = datetime.strptime(admissoes[0][0], "%d/%m/%Y")
             if data_admissao > datetime.now():
@@ -89,20 +98,21 @@ class TempoCasa:
         self._send_mail_year(info, anos)
 
     def _send_mail_year(self, info, anos):
-        # if self.hoje == info['aniversario_empresa']:
+        if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
+            # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
             subject = f'Parabéns pelos {anos} anos de Casa {info['nome'].title()}!'
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth', None) #-----
-            logging.info(f'Aniversáriantes da Empresa de {self.hoje} Enviada para {email}')
+            logging.info(f'Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}')
             self._send_email(email, subject, body)
 
     def _send_mail_star(self, info, anos):
-        # if self.hoje == info['aniversario_empresa']:
+        if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
-            # email_rh = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
             subject = f'Parabéns pelos {anos} anos de Casa {info['nome'].title()}!'
-            body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
-            print(f'Aniversáriantes da Empresa de {self.hoje} Enviada para {email}, {info["nome"]}')
+            body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
+            print(f'Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info["nome"]}')
             self._send_email(email, subject, body)
     def _generate_year_body(self,image_src, alt_text, link=None):
         if link:
@@ -112,7 +122,7 @@ class TempoCasa:
                         </a></body></html>"""
         else:
             return f"""<html><br><body style="display: flex; justify-content: center; align-items: center;height: auto; margin: 0;">
-                        <a style="display: flex; justify-content: center; align-items: center;">
+                        <a href="{link}" style="display: flex; justify-content: center; align-items: center;">
                             <img src="{image_src}" alt="{alt_text}">
                         </a></body></html>"""    
 

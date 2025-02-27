@@ -42,16 +42,21 @@ class SendMail:
         aniversarianteMes = dataNas.strftime("%m")
         mes = datetime.now().strftime("%m")
         self.emailPessoal = resultado.EMAPAR
-        
+        ano = datetime.now().year
+        if ano % 4 == 0: ano = 'bissexto' #Verifica se o ano é bissexto
         if data_admissao == hojeAdm:
             logging.info("--------------Informações de Bem Vindo--------------")
             # logging.info(f"Bem Vindo {self.nomeCompleto}")
             # self._send_welcome_mail(seen)
-        # elif data_nascimento == hoje and self.nomeUsuario == 'daniel.lucas':
-        elif data_nascimento == '21/02' and situacao != 7 :
+        if data_nascimento == '29/02' and ano != 'bissexto' and hoje == '28/02'and situacao != 7:
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
-            print(F"{self.nomeCompleto}, ({self.emailPessoal}), {situacao}")
+            print(F"{data_nascimento} | {self.nomeCompleto}, ({self.emailPessoal})")
+            # self._send_birthday_email(seen)
+        elif data_nascimento == hoje and situacao != 7  :
+            logging.info("--------------Informações de Aniversário--------------")
+            logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
+            print(F"{data_nascimento} | {self.nomeCompleto}, ({self.emailPessoal})")
             # self._send_birthday_email(seen)
 
 
