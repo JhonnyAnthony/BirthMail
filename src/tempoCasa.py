@@ -19,7 +19,7 @@ class TempoCasa:
 
     def _process_user(self, data):
         data_adm = self._parse_date(data.DATADM).strftime("%d/%m/%Y")
-        aniversario = self._parse_date(data.DATADM).strftime("%d/%m")
+        aniversario_empresa = self._parse_date(data.DATADM).strftime("%d/%m")
         data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") if data.DATAFA != datetime(1900, 12, 31) else datetime.now().strftime("%d/%m/%Y")
         cpf = data.NUMCPF
         
@@ -31,7 +31,7 @@ class TempoCasa:
                 'matriculas': [],
                 'data_admissao':data_adm,
                 'data_demissao':data_dem,
-                'aniversario_empresa': aniversario,
+                'aniversario_empresa': aniversario_empresa,
                 'email_pessoal': data.EMAPAR,
                 'email_corporativo': data.EMACOM,
                 'admissoes': []
@@ -41,9 +41,9 @@ class TempoCasa:
         teste = self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
         if data.SITAFA == 1:
-            self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario)
+            self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario_empresa)
 
-    def _check_anniversary(self, cpf, nome, data_adm,aniversario):
+    def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa):
         admissoes = self.data[cpf]['admissoes']
         tempo_de_casa = self.calcular_tempo_de_casa(admissoes)
         data_atual = datetime.now()
@@ -58,10 +58,9 @@ class TempoCasa:
         if len(admissoes) > 1:
             data_admissao_antiga = datetime.strptime(admissoes[-2][0], "%d/%m/%Y").strftime("%d/%m/%Y")
             data_demissao_antiga = datetime.strptime(admissoes[-2][1], "%d/%m/%Y").strftime("%d/%m/%Y")
-        if anos == 5 or anos == 10 or anos == 15 or anos == 20 or anos == 25 or anos == 30:
-        # print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} | Data de Admissão: {data_adm}{' Data de Admissão Antiga: ' + data_admissao_antiga  if data_admissao_antiga  else ''}{' Data de Demissao Antiga: ' + data_demissao_antiga  if data_demissao_antiga  else ''}")
-        # if anos > 1:
-            print(f"Aniversário de empresa de {nome.title()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} | Data de Admissão: {data_adm} ")
+        # if anos in (5,10,15,20,25,30):
+        if anos > 1 and aniversario_empresa == self.hoje:
+            print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} | Data de Admissão: {data_adm}{' Data de Admissão Antiga: ' + data_admissao_antiga  if data_admissao_antiga  else ''}{' Data de Demissao Antiga: ' + data_demissao_antiga  if data_demissao_antiga  else ''}")
             self._apply_filters(anos, self.data[cpf])
 
     def _apply_filters(self, anos, info):
@@ -101,18 +100,18 @@ class TempoCasa:
         if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
             # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
-            subject = f'Parabéns pelos {anos} anos de Casa {info['nome'].title()}!'
+            subject = f"Parabéns pelos {anos} anos de Casa {info['nome'].title()}!"
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth', None) #-----
-            logging.info(f'Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}')
+            logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
             self._send_email(email, subject, body)
 
     def _send_mail_star(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
             # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
-            subject = f'Parabéns pelos {anos} anos de Casa {info['nome'].title()}!'
+            subject = f"Parabéns pelos {anos} anos de Casa {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
-            print(f'Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info["nome"]}')
+            print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")
             self._send_email(email, subject, body)
     def _generate_year_body(self,image_src, alt_text, link=None):
         if link:
