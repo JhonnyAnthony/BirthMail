@@ -26,10 +26,8 @@ class SendMail:
             self.nomeCompleto = nomeFun.title()
         situacao = resultado.SITAFA
         self.email_corporativo = resultado.EMACOM
-        # print(self.email_corporativo)
         dataNas = resultado.DATNAS
         self.nomeUsuario = resultado.NOMUSU
-        # print(self.nomeUsuario)
         hoje = datetime.now().strftime("%d/%m")
         hojeAdm = datetime.now().strftime("%d/%m/%y")
 
@@ -39,25 +37,23 @@ class SendMail:
         
         data_admissao = datAdm.strftime("%d/%m/%y")
         data_nascimento = dataNas.strftime("%d/%m")
-        aniversarianteMes = dataNas.strftime("%m")
-        mes = datetime.now().strftime("%m")
         self.emailPessoal = resultado.EMAPAR
         ano = datetime.now().year
         if ano % 4 == 0: ano = 'bissexto' #Verifica se o ano é bissexto
         if data_admissao == hojeAdm:
             logging.info("--------------Informações de Bem Vindo--------------")
-            # logging.info(f"Bem Vindo {self.nomeCompleto}")
-            # self._send_welcome_mail(seen)
+            logging.info(f"Bem Vindo {self.nomeCompleto}")
+            self._send_welcome_mail(seen)
         if data_nascimento == '29/02' and ano != 'bissexto' and hoje == '28/02'and situacao != 7:
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
             print(F"{data_nascimento} | {self.nomeCompleto}, ({self.emailPessoal})")
-            # self._send_birthday_email(seen)
+            self._send_birthday_email(seen)
         elif data_nascimento == hoje and situacao != 7  :
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
             print(F"{data_nascimento} | {self.nomeCompleto}, ({self.emailPessoal})")
-            # self._send_birthday_email(seen)
+            self._send_birthday_email(seen)
 
 
     def _send_welcome_mail(self, seen):
@@ -67,7 +63,7 @@ class SendMail:
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
             body = self._generate_email_body(pictureNew, 'ImageWelcome')
-            # self._send_email(email,subject,body)
+            self._send_email(email,subject,body)
 
 
     def _send_birthday_email(self, seen):
@@ -76,13 +72,11 @@ class SendMail:
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
             email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
-            print(email)
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             seen.add(self.nomeUsuario)
             subject = f'Feliz Aniversário {self.nomeCompleto}!'
-
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
-            # self._send_email(email,subject,body)
+            self._send_email(email,subject,body)
 
     def _generate_email_body(self, image_src, alt_text, link=None):
         if link:
