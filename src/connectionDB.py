@@ -16,8 +16,7 @@ class Database:
             'user': user_data,
             'password': password_data
         }
-
-        # Check if environment variables are loaded
+        # Verifica se as variaveis de ambiente foram carregadas 
         if None in dsn.values():
             logging.error("Missing one or more environment variables.")
             return
@@ -28,173 +27,58 @@ class Database:
                 dsn=oracledb.makedsn(dsn['host'], dsn['port'], service_name=dsn['service_name'])
             )
             logging.info(f"--------------Informações da Database--------------")
-            logging.info("Database connection established successfully.")
-            
-
+            logging.info("Database connection established successfully.")           
         except oracledb.DatabaseError as e:
             logging.error("Error establishing connection: %s", e)
 
-    def query(self):
+    def query_principal(self):
         if self.connection is None:
             logging.error("No database connection established.")
             return []
         row_data_list = []
         try:
             self.cursor = self.connection.cursor()
-            self.cursor.execute("""
-                SELECT *
-                FROM (
-                    SELECT
-                        FUN.SITAFA AS SITAFA,
-                        -- Situação
-                        FUN.NUMCAD AS NUMCAD,
-                        -- Matrícula
-                        FUN.DATADM AS DATADM,
-                        -- Data Admissão
-                        FUN.DATNAS AS DATNAS,
-                        -- Data Nascimento
-                        FUN.NOMFUN AS NOMFUN,
-                        -- Nome completo
-                        EM.EMAPAR AS EMAPAR,
-                        -- Email pessoal
-                        USU.NOMUSU AS NOMUSU,
-                        -- Usuário 
-                        FUN.CODCAR AS CODCAR,
-                        -- Código cargo
-                        CAR.TITCAR AS TITCAR,
-                        -- Cargo
-                        ORN.NOMLOC AS NOMLOCAL,
-                        -- Setor
-                        FUN.NUMLOC AS NUMLOC,
-                        -- Local
-                        FUN.POSTRA,
-                        (
-                            SELECT Z.POSTRA
-                            FROM senior.R017HIE Z
-                            WHERE Z.ESTPOS = FUN.ESTPOS
-                            AND ROWNUM <= 1
-                            AND Z.POSPOS = (
-                                SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
-                                FROM senior.R017HIE HIE
-                                WHERE HIE.ESTPOS = FUN.ESTPOS
-                                AND HIE.POSTRA = FUN.POSTRA
-                                AND ROWNUM <= 1
-                            )
-                        ) AS POSTRA_CHE,
-                        (
-                            SELECT Z.IDEPOS
-                            FROM senior.R017HIE Z
-                            WHERE Z.ESTPOS = FUN.ESTPOS
-                            AND ROWNUM <= 1
-                            AND Z.POSPOS = (
-                                SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
-                                FROM senior.R017HIE HIE
-                                WHERE HIE.ESTPOS = FUN.ESTPOS
-                                AND HIE.POSTRA = FUN.POSTRA
-                                AND ROWNUM <= 1
-                            )
-                        ) AS IDEPOS,
-                        (
-                            SELECT K.NOMFUN
-                            FROM senior.R034FUN K
-                            WHERE ROWNUM = 1
-                            AND K.SITAFA <> 7
-                            AND K.ESTPOS = FUN.ESTPOS
-                            AND K.POSTRA = (
-                                SELECT Z.POSTRA
-                                FROM senior.R017HIE Z
-                                WHERE Z.ESTPOS = FUN.ESTPOS
-                                AND ROWNUM <= 1
-                                AND Z.POSPOS = (
-                                    SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
-                                    FROM senior.R017HIE HIE
-                                    WHERE HIE.ESTPOS = FUN.ESTPOS
-                                    AND HIE.POSTRA = FUN.POSTRA
-                                    AND ROWNUM <= 1
-                                )
-                            )
-                        ) AS NOMESUP,
-                        (
-                            SELECT SUP.NOMUSU
-                            FROM senior.R034FUN K
-                            INNER JOIN senior.R034USU F ON K.NUMEMP = F.NUMEMP AND K.TIPCOL = F.TIPCOL AND K.NUMCAD = F.NUMCAD
-                            INNER JOIN senior.R999USU SUP ON F.CODUSU = SUP.CODUSU
-                            WHERE ROWNUM = 1
-                            AND K.SITAFA <> 7
-                            AND K.ESTPOS = FUN.ESTPOS
-                            AND K.POSTRA = (
-                                SELECT Z.POSTRA
-                                FROM senior.R017HIE Z
-                                WHERE Z.ESTPOS = FUN.ESTPOS
-                                AND ROWNUM <= 1
-                                AND Z.POSPOS = (
-                                    SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
-                                    FROM senior.R017HIE HIE
-                                    WHERE HIE.ESTPOS = FUN.ESTPOS
-                                    AND HIE.POSTRA = FUN.POSTRA
-                                    AND ROWNUM <= 1
-                                )
-                            )
-                        ) AS USERSUP,
-                        ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
-                    FROM
-                        senior.R034FUN FUN
-                    INNER JOIN senior.R030EMP EMP ON FUN.NUMEMP = EMP.NUMEMP
-                    INNER JOIN senior.R024CAR CAR ON FUN.CODCAR = CAR.CODCAR AND FUN.ESTCAR = CAR.ESTCAR
-                    LEFT JOIN senior.R034CPL EM ON FUN.NUMCAD = EM.NUMCAD
-                    INNER JOIN senior.R016ORN ORN ON ORN.NUMLOC = FUN.NUMLOC
-                    INNER JOIN senior.R030FIL FIL ON FUN.CODFIL = FIL.CODFIL AND FUN.NUMEMP = FIL.NUMEMP
-                    LEFT JOIN senior.R034USU FUS ON FUN.NUMEMP = FUS.NUMEMP AND FUN.TIPCOL = FUS.TIPCOL AND FUN.NUMCAD = FUS.NUMCAD
-                    LEFT JOIN senior.R999USU USU ON FUS.CODUSU = USU.CODUSU
-                    LEFT JOIN senior.R034FOT PHO ON FUN.NUMCAD = PHO.NUMCAD AND FUN.TIPCOL = PHO.TIPCOL AND FUN.NUMEMP = PHO.NUMEMP
-                    WHERE
-                        FUN.SITAFA != 7
-                        AND FUN.TIPCOL = '1'
-                        AND CAR.TITCAR != 'PENSIONISTA'
-                )
-                WHERE RN in (1)
-            """)
-            RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
-            rows = self.cursor.fetchall()
-            for row in rows:
-                row_data_object = RowData(*row)
-                row_data_list.append(row_data_object)
-            logging.info("Query executed successfully.")
-        except oracledb.DatabaseError as e:
-            logging.error("Error executing query: %s", e)
-        finally:
-            if self.cursor:
-                self.cursor.close()
-            if self.connection:
-                self.connection.close()
-            logging.info("Database connection closed.")
-            logging.info("------------------------------------------------------------------------------------")
-        return row_data_list
-    def R034FUN(self):
-        if self.connection is None:
-            logging.error("No database connection established.")
-            return []
-        row_data_list = []
-        try:
-            self.cursor = self.connection.cursor()
-            self.cursor.execute("""
+            self.cursor.execute(
+                """
                 SELECT
-                    FUN.NUMEMP AS NUMEMP,
+                *
+                FROM
+                (
+                SELECT
                     FUN.SITAFA AS SITAFA,
+                    FUN.NUMCPF AS NUMCPF,
                     FUN.NUMCAD AS NUMCAD,
-                    FUN.DATADM AS DATADM,
                     FUN.DATNAS AS DATNAS,
+                    FUN.DATADM AS DATADM,
+                    FUN.DATAFA AS DATAFA,
                     FUN.NOMFUN AS NOMFUN,
-                    FUN.CODCAR AS CODCAR,
-                    FUN.NUMLOC AS NUMLOC,
-                    FUN.TIPCOL as TIPCOL,
-                    FUN.POSTRA
+                    EM.EMAPAR AS EMAPAR,
+                    EM.EMACOM AS EMACOM,
+                    USU.NOMUSU AS NOMUSU,
+                    CAR.TITCAR AS TITCAR,
+                    ORN.NOMLOC AS NOMLOCAL,
+                    FUN.ESTPOS AS ESTPOS,  -- Adicionando a coluna ESTPOS
+                    FUN.POSTRA AS POSTRA,  -- Adicionando a coluna POSTRA
+                    ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
                 FROM
                     senior.R034FUN FUN
-                WHERE 
+                    INNER JOIN senior.R030EMP EMP ON FUN.NUMEMP = EMP.NUMEMP
+                    INNER JOIN senior.R024CAR CAR ON FUN.CODCAR = CAR.CODCAR AND FUN.ESTCAR = CAR.ESTCAR 
+                    INNER JOIN senior.R034CPL EM ON FUN.NUMCAD = EM.NUMCAD AND FUN.NUMEMP = EM.NUMEMP
+                    INNER JOIN senior.R016ORN ORN ON ORN.NUMLOC = FUN.NUMLOC
+                    INNER JOIN senior.R030FIL FIL ON FUN.CODFIL = FIL.CODFIL AND FUN.NUMEMP = FIL.NUMEMP
+                    INNER JOIN senior.R034USU FUS ON FUN.NUMEMP = FUS.NUMEMP AND FUN.NUMCAD = FUS.NUMCAD AND FUN.TIPCOL = FUS.TIPCOL
+                    INNER JOIN senior.R999USU USU ON USU.CODUSU = FUS.CODUSU
+                    LEFT JOIN senior.R034FOT PHO ON FUN.NUMCAD = PHO.NUMCAD AND FUN.TIPCOL = PHO.TIPCOL AND FUN.NUMEMP = PHO.NUMEMP
+                WHERE
                     FUN.SITAFA != 7
                     AND FUN.TIPCOL = '1'
-            """)
+                    AND CAR.TITCAR <> 'PENSIONISTA'
+                    AND FUN.NUMEMP <> 100
+                )
+                WHERE
+                RN = 1
+                """)
             RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
             rows = self.cursor.fetchall()
             for row in rows:
@@ -208,30 +92,172 @@ class Database:
                 self.cursor.close()
             logging.info("Cursor closed.")
         return row_data_list
-
-    def R034CPL(self, NUMEMP, TIPCOL, NUMCAD):
+    
+    def query_tempoCasa(self):
         if self.connection is None:
             logging.error("No database connection established.")
+            return []
+        row_data_list = []
         try:
             self.cursor = self.connection.cursor()
-            self.cursor.execute("""
+            self.cursor.execute(
+                """
                 SELECT
-                    EM.EMAPAR AS EMAPAR
+                *
                 FROM
-                    SENIOR.R034CPL EM
-                WHERE 	
-                    EM.NUMEMP = :numemp
-                    AND EM.TIPCOL = :tipcol
-                    AND EM.NUMCAD = :numcad
-            """, numemp=NUMEMP, tipcol=TIPCOL, numcad=NUMCAD)
-            rows = self.cursor.fetchone()
-            logging.info("Query executed successfully.")
+                (
+                SELECT
+                    FUN.SITAFA AS SITAFA,
+                    FUN.NUMCPF AS NUMCPF,
+                    FUN.NUMCAD AS NUMCAD,
+                    FUN.DATADM AS DATADM,
+                    FUN.DATAFA AS DATAFA,
+                    FUN.NOMFUN AS NOMFUN,
+                    EM.EMAPAR AS EMAPAR,
+                    EM.EMACOM AS EMACOM,
+                    CAR.TITCAR AS TITCAR,
+                    ORN.NOMLOC AS NOMLOCAL,
+                    ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
+                FROM
+                    senior.R034FUN FUN
+                    INNER JOIN senior.R030EMP EMP ON FUN.NUMEMP = EMP.NUMEMP
+                    INNER JOIN senior.R024CAR CAR ON FUN.CODCAR = CAR.CODCAR AND FUN.ESTCAR = CAR.ESTCAR 
+                    INNER JOIN senior.R034CPL EM ON FUN.NUMCAD = EM.NUMCAD AND FUN.NUMEMP = EM.NUMEMP
+                    INNER JOIN senior.R016ORN ORN ON ORN.NUMLOC = FUN.NUMLOC
+                    INNER JOIN senior.R030FIL FIL ON FUN.CODFIL = FIL.CODFIL AND FUN.NUMEMP = FIL.NUMEMP
+                    INNER JOIN senior.R034USU FUS ON FUN.NUMEMP = FUS.NUMEMP AND FUN.NUMCAD = FUS.NUMCAD AND FUN.TIPCOL = FUS.TIPCOL
+                    INNER JOIN senior.R999USU USU ON USU.CODUSU = FUS.CODUSU
+                    LEFT JOIN senior.R034FOT PHO ON FUN.NUMCAD = PHO.NUMCAD AND FUN.TIPCOL = PHO.TIPCOL AND FUN.NUMEMP = PHO.NUMEMP
+                WHERE
+                    FUN.TIPCOL = '1'
+                    AND CAR.TITCAR <> 'PENSIONISTA'
+                    AND FUN.NUMEMP <> 100
+                )
+                WHERE
+                RN = 1
+                """)
+            RowData = namedtuple('RowData', [desc[0] for desc in self.cursor.description])
+            rows = self.cursor.fetchall()
             for row in rows:
-                return row
+                row_data_object = RowData(*row)
+                row_data_list.append(row_data_object)
+            logging.info("Query executed successfully.")
         except oracledb.DatabaseError as e:
             logging.error("Error executing query: %s", e)
         finally:
             if self.cursor:
                 self.cursor.close()
             logging.info("Cursor closed.")
-            
+        return row_data_list        
+    
+    def query_nomesup(self, ESTPOS, POSTRA):
+        if self.connection is None:
+            logging.error("No database connection established.")
+            return None
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute("""
+                SELECT K.NOMFUN
+                FROM senior.R034FUN K
+                WHERE ROWNUM = 1
+                AND K.SITAFA <> 7
+                AND K.ESTPOS = :estpos
+                AND K.POSTRA = (
+                    SELECT Z.POSTRA
+                    FROM senior.R017HIE Z
+                    WHERE Z.ESTPOS = :estpos
+                    AND ROWNUM <= 1
+                    AND Z.POSPOS = (
+                        SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                        FROM senior.R017HIE HIE
+                        WHERE HIE.ESTPOS = :estpos
+                        AND HIE.POSTRA = :postra
+                        AND ROWNUM <= 1
+                    )
+                )
+            """, estpos=ESTPOS, postra=POSTRA)
+            row = self.cursor.fetchone()
+            return row[0] if row else None
+        except oracledb.DatabaseError as e:
+            logging.error("Error executing query: %s", e)
+        finally:
+            if self.cursor:
+                self.cursor.close()
+    # def query_situacaosup(self, ESTPOS, POSTRA):
+    #     if self.connection is None:
+    #         logging.error("No database connection established.")
+    #         return None
+    #     try:
+    #         self.cursor = self.connection.cursor()
+    #         self.cursor.execute("""
+    #             SELECT 
+    #                 K.SITAFA
+    #             FROM senior.R034FUN K
+    #             WHERE 
+    #                 ROWNUM = 1
+    #                 AND K.SITAFA <> 7
+    #                 AND K.ESTPOS = :estpos
+    #                 AND K.POSTRA = (
+    #                     SELECT Z.POSTRA
+    #                     FROM senior.R017HIE Z
+    #                     WHERE Z.ESTPOS = :estpos
+    #                     AND ROWNUM <= 1
+    #                     AND Z.POSPOS = (
+    #                         SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+    #                         FROM senior.R017HIE HIE
+    #                         WHERE HIE.ESTPOS = :estpos
+    #                         AND HIE.POSTRA = :postra
+    #                         AND ROWNUM <= 1
+    #                     )
+    #                 )
+    #         """, estpos=ESTPOS, postra=POSTRA)
+    #         row = self.cursor.fetchone()
+    #         return row[0] if row else None
+    #     except oracledb.DatabaseError as e:
+    #         logging.error("Error executing query: %s", e)
+    #     finally:
+    #         if self.cursor:
+    #             self.cursor.close()
+        
+    def query_mailsup(self, ESTPOS, POSTRA):
+        if self.connection is None:
+            logging.error("No database connection established.")
+            return None
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute("""
+                SELECT
+                    E.EMACOM
+                FROM
+                    senior.R034FUN K
+                    INNER JOIN senior.R034CPL E ON K.NUMCAD = E.NUMCAD AND K.NUMEMP = E.NUMEMP
+                WHERE
+                    ROWNUM = 1
+                    AND K.SITAFA <> 7
+                    AND K.ESTPOS = :estpos
+                    AND K.POSTRA = (
+                        SELECT
+                            Z.POSTRA
+                        FROM
+                            senior.R017HIE Z
+                        WHERE                    
+                            Z.ESTPOS = :estpos
+                            AND ROWNUM <= 1
+                            AND Z.POSPOS = (
+                                SELECT
+                                SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                                FROM
+                                senior.R017HIE HIE
+                                WHERE HIE.ESTPOS = :estpos
+                                AND HIE.POSTRA = :postra
+                                AND ROWNUM <= 1
+                            )
+                        )
+            """, estpos=ESTPOS, postra=POSTRA)
+            row = self.cursor.fetchone()
+            return row[0] if row else None
+        except oracledb.DatabaseError as e:
+            logging.error("Error executing query: %s", e)
+        finally:
+            if self.cursor:
+                self.cursor.close()

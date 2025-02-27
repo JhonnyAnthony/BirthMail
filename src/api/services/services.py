@@ -7,7 +7,7 @@ class Connection:
         self.db.connectData()
 
     def connection(self):
-        return self.db.query()
+        return self.db.query_principal()
 class GetCargos:
     def __init__(self):
         pass
@@ -19,8 +19,8 @@ class GetCargos:
         id = 0
         for result in results:
             id += 1
-            setor = result.NOMLOC
-            nome_sup = result.NOMESUP   if result.NOMESUP else 'BIANCA DE OLIVEIRA LUIZ MITTELSTADT'# Tratar null
+            setor = result.NOMLOCAL
+            nome_sup = result.NOMESUP   #if result.NOMESUP else 'BIANCA DE OLIVEIRA LUIZ MITTELSTADT'# Tratar null
             nome_completo = result.NOMFUN
             cargo = result.TITCAR.title()
             idPos = result.IDEPOS

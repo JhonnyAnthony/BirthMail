@@ -11,19 +11,22 @@ class SendMail:
         self.db.connectData()
     
     def send_birthday_emails(self):
-        resultados = self.db.query()  # Armazena dados dos Usuários
+        resultados = self.db.query_principal()  # Armazena dados dos Usuários
         seen = set()  # Conjunto para rastrear nomes de usuários únicos
         for resultado in resultados:  # Loop para verificar todos os Usuários
             self._process_user(resultado,seen)
+
 
     def _process_user(self, resultado,seen):
         datAdm = resultado.DATADM
         nomeFun = resultado.NOMFUN
         RN = resultado.RN
         if nomeFun:
+
             self.nomeCompleto = nomeFun.title()
         situacao = resultado.SITAFA
-        numCad = resultado.NUMCAD
+        self.email_corporativo = resultado.EMACOM
+        # print(self.email_corporativo)
         dataNas = resultado.DATNAS
         self.nomeUsuario = resultado.NOMUSU
         # print(self.nomeUsuario)
@@ -39,19 +42,23 @@ class SendMail:
         aniversarianteMes = dataNas.strftime("%m")
         mes = datetime.now().strftime("%m")
         self.emailPessoal = resultado.EMAPAR
-        self.email_corporativo = f"{self.nomeUsuario}@fgmdentalgroup.com"
-
-
+        ano = datetime.now().year
+        if ano % 4 == 0: ano = 'bissexto' #Verifica se o ano é bissexto
         if data_admissao == hojeAdm:
             logging.info("--------------Informações de Bem Vindo--------------")
             # logging.info(f"Bem Vindo {self.nomeCompleto}")
             # self._send_welcome_mail(seen)
-        # elif data_nascimento == hoje and self.nomeUsuario == 'daniel.lucas':
-        elif data_nascimento == hoje:
+        if data_nascimento == '29/02' and ano != 'bissexto' and hoje == '28/02'and situacao != 7:
             logging.info("--------------Informações de Aniversário--------------")
             logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
-            print(F"{self.nomeCompleto}, ({self.emailPessoal}), {situacao}, {RN}")
+            print(F"{data_nascimento} | {self.nomeCompleto}, ({self.emailPessoal})")
             # self._send_birthday_email(seen)
+        elif data_nascimento == hoje and situacao != 7  :
+            logging.info("--------------Informações de Aniversário--------------")
+            logging.info(f"Hoje é o Aniversário de {self.nomeCompleto}")
+            print(F"{data_nascimento} | {self.nomeCompleto}, ({self.emailPessoal})")
+            # self._send_birthday_email(seen)
+
 
     def _send_welcome_mail(self, seen):
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
@@ -69,10 +76,13 @@ class SendMail:
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
             email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
+            print(email)
             # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
-            subject = f'Hoje é o seu Aniversário - Parabéns {self.nomeCompleto}!'
+            seen.add(self.nomeUsuario)
+            subject = f'Feliz Aniversário {self.nomeCompleto}!'
+
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
-            self._send_email(email,subject,body)
+            # self._send_email(email,subject,body)
 
     def _generate_email_body(self, image_src, alt_text, link=None):
         if link:
