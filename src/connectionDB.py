@@ -110,13 +110,17 @@ class Database:
                     FUN.SITAFA AS SITAFA,
                     FUN.NUMCPF AS NUMCPF,
                     FUN.NUMCAD AS NUMCAD,
+                    FUN.DATNAS AS DATNAS,
                     FUN.DATADM AS DATADM,
                     FUN.DATAFA AS DATAFA,
                     FUN.NOMFUN AS NOMFUN,
                     EM.EMAPAR AS EMAPAR,
                     EM.EMACOM AS EMACOM,
+                    USU.NOMUSU AS NOMUSU,
                     CAR.TITCAR AS TITCAR,
                     ORN.NOMLOC AS NOMLOCAL,
+                    FUN.ESTPOS AS ESTPOS,  -- Adicionando a coluna ESTPOS
+                    FUN.POSTRA AS POSTRA,  -- Adicionando a coluna POSTRA
                     ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
                 FROM
                     senior.R034FUN FUN

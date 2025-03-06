@@ -57,6 +57,10 @@ class SendMail:
 
 
     def _send_welcome_mail(self, seen):
+        if self.emailPessoal == ' ':
+            self.emailPessoal = self.email_corporativo
+        if self.email_corporativo == ' ':
+            self.email_corporativo = self.emailPessoal 
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
             # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]  # ---------------------PRD-----------------------------
@@ -69,6 +73,8 @@ class SendMail:
     def _send_birthday_email(self, seen):
         if self.emailPessoal == ' ':
             self.emailPessoal = self.email_corporativo
+        if self.email_corporativo == ' ':
+            self.email_corporativo = self.emailPessoal
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
             # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------

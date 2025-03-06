@@ -12,6 +12,7 @@ class Manager:
         self.db_connection = Database()  # Inicializa a conexão com o banco de dados
         self.db_connection.connectData()  # Conecta ao banco de dados
         self.supervisores = {}  # Dicionário para armazenar supervisores e seus funcionários
+        self.funcionario = {}
         locale.setlocale(locale.LC_TIME, 'pt_BR')  # Define a localidade para português do Brasil
 
     def connectionDB(self):
@@ -47,8 +48,38 @@ class Manager:
                 if nome_supervisor not in self.supervisores:
                     self.supervisores[nome_supervisor] = {"funcionarios": [], "email": email_supervisor}
                 self.supervisores[nome_supervisor]["funcionarios"].append((nome_funcionario, mes_nascimento, dia_mes_nascimento, local))
+            if nome_funcionario:
+                if nome_funcionario not in self.funcionario:
+                    self.funcionario[nome_funcionario] = {
+                        "mes_nascimento": mes_nascimento,
+                        "dia_mes_nascimento": dia_mes_nascimento,
+                        "local": local,
+                        "funcionarios": []  # Initialize the key here
+                    }
+                else:
+                    self.funcionario[nome_funcionario].update({
+                        "mes_nascimento": mes_nascimento,
+                        "dia_mes_nascimento": dia_mes_nascimento,
+                        "local": local
+                    })
+            
         except Exception as e:
             logging.error("Error processing user data: %s", e)
+    def filtrar_aniversariantes_sem_superior(self):
+        aniversariantes_sem_sup = {}
+        mes_atual = datetime.now().strftime("%m")
+        hoje = datetime.now().strftime("%d/%m")
+        for nome_funcionario, info in self.funcionario.items():
+            dia_mes_nascimento = info["dia_mes_nascimento"]
+            local = info["local"]
+            if dia_mes_nascimento == hoje:
+                aniversariantes_sem_sup[nome_funcionario] = {
+                    "dia_mes_nascimento": dia_mes_nascimento,
+                    "local": local
+                }
+        print(aniversariantes_sem_sup)
+        return aniversariantes_sem_sup
+
     def _format_name(self, name):
         return ' '.join([word.capitalize() for word in name.split()]) if name else ""
 
@@ -66,9 +97,7 @@ class Manager:
                     if supervisor not in aniversariantes:
                         aniversariantes[supervisor] = {"funcionarios": [], "email": info["email"]}
                     aniversariantes[supervisor]["funcionarios"].append((funcionario, dia_mes_nascimento, local))
-        
         return aniversariantes
-
     def filtrar_aniversariantes_do_mes_seguinte(self):
         aniversariantes_mes = {}
         mes_seguinte = datetime.now() + relativedelta(months=1)
@@ -86,8 +115,24 @@ class Manager:
             for funcionario in info["funcionarios"]:
                 datas.append(funcionario[1])  # Adiciona a data de aniversário
         return datas
+    def filtrar_datas(self, aniversariantes):
+        datas = []
+        for supervisor, info in aniversariantes.items():
+            for funcionario in info["funcionarios"]:
+                datas.append(funcionario[1])  # Adiciona a data de aniversário
+        return datas
+    def filtrar_datas_sem_sup(self, aniversariantes_sem_sup):
+        datas = []
+        for nome_funcionario, info in self.funcionario.items():
+            if "dia_mes_nascimento" in info:
+                datas.append(info["dia_mes_nascimento"])  # Adiciona a data de aniversário
+            else:
+                logging.error(f"Key 'dia_mes_nascimento' not found in info for {nome_funcionario}")
+        return datas
     
     def birthMonth(self):
+        aniversariantes_sem_sup = self.filtrar_aniversariantes_sem_superior()
+        data_aniversario_sem_sup = self.filtrar_datas_sem_sup(aniversariantes_sem_sup)
         aniversariantes = self.filtrar_aniversariantes_do_mes()
         aniversariantes_mes = self.filtrar_aniversariantes_do_mes_seguinte()
         data_aniversario = self.filtrar_datas(aniversariantes)
@@ -98,6 +143,7 @@ class Manager:
 
         if aniversariantes:
             self._send_birthday_today_mail(aniversariantes, data_aniversario,ano)                  
+            self._send_birthday_today_mail_sem_sup(aniversariantes_sem_sup, data_aniversario_sem_sup,ano)                  
             self._send_mail_rh(aniversariantes_mes)
             self._send_birth_superior_mail(aniversariantes_mes)
                     
@@ -109,7 +155,7 @@ class Manager:
             body = self._generate_dayling_email_body(aniversariantes,ano)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
-            self._send_email(email_morning, subject, body)
+            # self._send_email(email_morning, subject, body)
         elif  self.hoje in data_aniversario :
             # email_morning = self.emailToday       #---------------------PRD-----------------------------
             email_morning = self.email_teste    #---------------------QAS-----------------------------
@@ -118,7 +164,29 @@ class Manager:
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
             print("Email Aniversário Diário")
-            self._send_email(email_morning, subject, body)
+            # self._send_email(email_morning, subject, body)
+        else: 
+            logging.info(f"--------------Informações do Envio de Email--------------")
+            logging.info("Sem aniversáriantes no dia!")       
+    
+    def _send_birthday_today_mail_sem_sup(self, aniversariantes_sem_sup, data_aniversario_sem_sup,ano):
+        if  '29/02' in data_aniversario_sem_sup and ano != 'bissexto' and self.hoje == '27/02':
+            # email_morning = self.emailToday       #---------------------PRD-----------------------------
+            email_morning = self.email_teste    #---------------------QAS-----------------------------
+            subject = f'Aniversariantes do dia'
+            body = self._generate_dayling_email_body(aniversariantes_sem_sup,ano)
+            logging.info(f"--------------Informações do Envio de Email--------------")
+            logging.info(f'Lista de Aniversáriantes do dia Enviada')
+            # self._send_email(email_morning, subject, body)
+        elif  self.hoje in data_aniversario_sem_sup :
+            # email_morning = self.emailToday       #---------------------PRD-----------------------------
+            email_morning = self.email_teste    #---------------------QAS-----------------------------
+            subject = f'Aniversariantes do dia'
+            body = self._generate_dayling_email_body_sem_sup(aniversariantes_sem_sup,ano)
+            logging.info(f"--------------Informações do Envio de Email--------------")
+            logging.info(f'Lista de Aniversáriantes do dia Enviada')
+            print("Email Aniversário Diário")
+            # self._send_email(email_morning, subject, body)
         else: 
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info("Sem aniversáriantes no dia!")       
@@ -137,7 +205,7 @@ class Manager:
             subject = f'Aniversariantes do mês de {mes_atual}'
             body = self._generate_rh_email_body(aniversariantes_mes)
             logging.info(f'Lista de Aniversáriantes do Mes de {mes_atual} Enviada para {email_rh}')
-            self._send_email(email_rh, subject, body)
+            # self._send_email(email_rh, subject, body)
 
 
     def _send_birth_superior_mail(self, aniversariantes_mes): 
@@ -159,7 +227,7 @@ class Manager:
                 body = self._generate_supervisor_email_body(supervisor, funcionarios) # Gera o corpo do e-mail 
                 logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_atual}')
                 print(f"Contagem: {count}")
-                self._send_email(emailSupervisor, subject, body) # Envia o e-mail
+                # self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     def _converter_data(self, data_str):
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
     
@@ -185,6 +253,34 @@ class Manager:
         body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
 
+
+    def _generate_dayling_email_body_sem_sup(self, aniversariantes_sem_sup, ano):
+        body = f"<strong>Olá Liderança. Segue a lista de colaboradores que fazem aniversário hoje:<br><br></strong>"
+        body += "<table border='1' cellpadding='5' cellspacing='0'>"
+        body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th><th>Setor</th></tr>""" 
+
+        # Colete todos os aniversariantes em uma única lista
+        todos_aniversariantes = []
+        for funcionario, info in aniversariantes_sem_sup.items():
+            dia_mes_nascimento = info["dia_mes_nascimento"]
+            local = info["local"]
+            if local == 'Administrador':
+                local = 'Diretoria'
+            if self.hoje in dia_mes_nascimento:
+                todos_aniversariantes.append((funcionario, dia_mes_nascimento, local))
+            elif dia_mes_nascimento == '29/02' and ano != 'bissexto' and self.hoje == '28/02':  # FILTRO DE ANIVERSÁRIO DIA 29/02 SEM ANO BISSEXTO
+                todos_aniversariantes.append((funcionario, dia_mes_nascimento, local))
+
+        # Ordene todos os aniversariantes por nome do colaborador
+        todos_aniversariantes.sort(key=lambda x: x[0])
+
+        # Construa a tabela
+        for funcionario, dia_mes_nascimento, local in todos_aniversariantes:
+            body += f"<tr><td>🎂{funcionario}</td><td>📅{dia_mes_nascimento}</td><td>{local}</td></tr>"
+
+        body += "</table><br>"
+        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
+        return body
 
     def _generate_dayling_email_body(self, aniversariantes,ano):
         body = f"<strong>Olá Liderança. Segue a lista de colaboradores que fazem aniversário hoje:<br><br></strong>"
