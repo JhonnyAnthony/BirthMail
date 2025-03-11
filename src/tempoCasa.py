@@ -77,6 +77,7 @@ class TempoCasa:
 
     def filtrar_aniversariantes_do_mes(self):
         aniversariantes = {}
+        # mes_seguinte = datetime.now() 
         mes_seguinte = datetime.now() + relativedelta(months=1)
         mes_seguinte = mes_seguinte.strftime("%m")
         for supervisor, info in self.supervisores.items():
@@ -154,17 +155,6 @@ class TempoCasa:
         logging.info(f"Aniversáriantes da Empresa Enviada para {email}")
         self._send_email(email, subject, body)
 
-    def _generate_list_body(self):
-        body = f"<strong>Olá. Segue a lista de colaboradores que tem duas matriculas<br><br></strong>"
-        body += "<table border='1' cellpadding='5' cellspacing='0'>"
-        body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th><th>Tempo de Empresa</th></tr>"""
-
-        # Ordene os funcionários por data de aniversário
-        for anosLista, aniversario, nome in self.anniversary_list:
-            body += f"<tr><td>{nome}</td><td>{aniversario}</td><td>{anosLista} {'anos' if anosLista > 1 else 'ano'}</td></tr>"
-        body += "</table><br>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
-        return body
     def filtrar_aniversariantes(self, info, anos):
         # print(f"Filtrando aniversariantes para {anos} anos")  
         self._send_mail_year(info, anos)
@@ -172,22 +162,23 @@ class TempoCasa:
         count = 0
         hoje = datetime.now().strftime("%d/%m")
         mesStart = datetime.now().month
-        diaFixo = 10 
+        diaFixo = 11 
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = data_fixa.strftime("%d/%m")
         if hoje == diaStart:
             for supervisor, info in aniversariantes.items(): 
-                funcionarios = info["funcionarios"]      
-                count += 1
-                # emailSupervisor = info["email"]       #---------------------PRD-----------------------------
-                emailSupervisor = ["jhonny.souza@fgmdentalgroup.com"]    #---------------------QAS-----------------------------
-                mes_seguinte = datetime.now() + relativedelta(months=1)
-                mes_seguinte = mes_seguinte.strftime("%B").title()
-                subject = f'Tempo de casa de {mes_seguinte}' # Define o assunto do e-mail 
-                body = self._generate_supervisor_email_body(funcionarios, mes_seguinte, supervisor) # Gera o corpo do e-mail 
-                logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_seguinte}')
-                # print(f"Contagem: {count}")
-                # self._send_email(emailSupervisor, subject, body) # Envia o e-mail
+                    funcionarios = info["funcionarios"]      
+                    count += 1
+                    # emailSupervisor = info["email"]       #---------------------PRD-----------------------------
+                    emailSupervisor = ["jhonny.souza@fgmdentalgroup.com"]    #---------------------QAS-----------------------------
+                    mes_seguinte = datetime.now() + relativedelta(months=1)
+                    # mes_seguinte = datetime.now() 
+                    mes_seguinte = mes_seguinte.strftime("%B").title()
+                    subject = f'Tempo de casa de {mes_seguinte}' # Define o assunto do e-mail 
+                    body = self._generate_supervisor_email_body(funcionarios, mes_seguinte, supervisor) # Gera o corpo do e-mail 
+                    logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_seguinte}')
+                    # print(f"Contagem: {count}")
+                    self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     
     def _send_mail_year(self, info, anos):
         if self.hoje in info['aniversario_empresa']:
@@ -197,7 +188,7 @@ class TempoCasa:
             subject = f"Parabéns pelos {anos} anos de FGM | {info['nome'].title()}!"
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth', 'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/Geral/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
-            # self._send_email(email, subject, body)
+            self._send_email(email, subject, body)
 
     
     def _send_mail_star(self, info, anos):
@@ -207,7 +198,18 @@ class TempoCasa:
             subject = f"Parabéns pelos {anos} anos de FGM| {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             # print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")
-            # self._send_email(email, subject, body)
+            self._send_email(email, subject, body)
+    def _generate_list_body(self):
+        body = f"<strong>Olá. Segue a lista de colaboradores que tem duas matriculas<br><br></strong>"
+        body += "<table border='1' cellpadding='5' cellspacing='0'>"
+        body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th></tr>"""
+
+        # Ordene os funcionários por data de aniversário
+        for anosLista, aniversario, nome in self.anniversary_list:
+            body += f"<tr><td>{nome}</td><td>{aniversario}</td></tr>"
+        body += "</table><br>"
+        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
+        return body
     def _generate_supervisor_email_body(self, funcionarios, mes_seguinte, supervisor):
         body = f"<strong>Olá {supervisor.title()}. Segue a lista de colaboradores que fazem aniversário de empresa no mês de {mes_seguinte}:<br><br></strong>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
@@ -218,11 +220,19 @@ class TempoCasa:
         for funcionario in funcionarios_ordenados:
             tempo_de_empresa = self.calcular_tempo_de_casa([(funcionario['data_admissao'], datetime.now().strftime("%d/%m/%Y"))])
             anos = tempo_de_empresa.days // 365 
-            if funcionario['aniversario_empresa'] != datetime.now().strftime("%d/%m"):
+            data_atual = datetime.now()
+            primeiro_dia_proximo_mes = (data_atual.replace(day=28) + timedelta(days=4)).replace(day=1)
+            ultimo_dia_mes_atual = primeiro_dia_proximo_mes - timedelta(days=1)
+            ultimodia = int(ultimo_dia_mes_atual.strftime('%d'))
+            meses = (tempo_de_empresa.days % 365) // ultimodia  
+            if funcionario['aniversario_empresa'] != datetime.now().strftime("%d/%m") and meses > 1:
                 anos = anos + 1
             else:
                 anos = anos
-            body += f"<tr><td>{funcionario['nome']}</td><td>{funcionario['aniversario_empresa']}</td><td>{funcionario['setor']}</td><td> {anos} {'anos' if anos > 1 else 'ano'}</td></tr>"
+            if anos > 0:
+                body += f"<tr><td>{funcionario['nome']}</td><td>{funcionario['aniversario_empresa']}</td><td>{funcionario['setor']}</td><td>{anos} {'anos' if anos > 1 else 'ano'}</td></tr>"
+            else:
+                body += f"<tr><td>{funcionario['nome']}</td><td>{funcionario['aniversario_empresa']}</td><td>{funcionario['setor']}</td><td>Funcionario Novo</td></tr>"
         body += "</table><br>"
         body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
