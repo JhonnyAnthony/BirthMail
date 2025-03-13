@@ -57,6 +57,7 @@ class Database:
                     USU.NOMUSU AS NOMUSU,
                     CAR.TITCAR AS TITCAR,
                     ORN.NOMLOC AS NOMLOCAL,
+                    FUN.NUMLOC AS NUMLOC,
                     FUN.ESTPOS AS ESTPOS,  -- Adicionando a coluna ESTPOS
                     FUN.POSTRA AS POSTRA,  -- Adicionando a coluna POSTRA
                     ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
@@ -117,6 +118,7 @@ class Database:
                     EM.EMACOM AS EMACOM,
                     CAR.TITCAR AS TITCAR,
                     ORN.NOMLOC AS NOMLOCAL,
+                    FUN.NUMLOC AS NUMLOC,
                     ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.NUMCAD) AS RN
                 FROM
                     senior.R034FUN FUN
@@ -176,6 +178,11 @@ class Database:
                     )
                 )
             """, estpos=ESTPOS, postra=POSTRA)
+            
+            # Instruções de depuração
+            print(f"ESTPOS: {ESTPOS}")
+            print(f"POSTRA: {POSTRA}")
+            
             row = self.cursor.fetchone()
             return row[0] if row else None
         except oracledb.DatabaseError as e:
@@ -253,6 +260,39 @@ class Database:
                                 AND ROWNUM <= 1
                             )
                         )
+            """, estpos=ESTPOS, postra=POSTRA)
+            row = self.cursor.fetchone()
+            return row[0] if row else None
+        except oracledb.DatabaseError as e:
+            logging.error("Error executing query: %s", e)
+        finally:
+            if self.cursor:
+                self.cursor.close()
+    def query_numlocsup(self, ESTPOS, POSTRA):
+        if self.connection is None:
+            logging.error("No database connection established.")
+            return None
+        try:
+            self.cursor = self.connection.cursor()
+            self.cursor.execute("""
+                SELECT K.NUMLOC
+                FROM senior.R034FUN K
+                WHERE ROWNUM = 1
+                AND K.SITAFA <> 7
+                AND K.ESTPOS = :estpos
+                AND K.POSTRA = (
+                    SELECT Z.POSTRA
+                    FROM senior.R017HIE Z
+                    WHERE Z.ESTPOS = :estpos
+                    AND ROWNUM <= 1
+                    AND Z.POSPOS = (
+                        SELECT SUBSTR(POSPOS, 0, LENGTH(POSPOS)-2)
+                        FROM senior.R017HIE HIE
+                        WHERE HIE.ESTPOS = :estpos
+                        AND HIE.POSTRA = :postra
+                        AND ROWNUM <= 1
+                    )
+                )
             """, estpos=ESTPOS, postra=POSTRA)
             row = self.cursor.fetchone()
             return row[0] if row else None

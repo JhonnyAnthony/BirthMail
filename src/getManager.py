@@ -35,20 +35,25 @@ class Manager:
             mes_nascimento = data_nascimento.strftime("%m")
             dia_mes_nascimento = data_nascimento.strftime("%d/%m")
             self.email_teste = ["jhonny.souza@fgmdentalgroup.com"]  
-            # Chamando as funções para obter os dados dos supervisores
+            
+            numloc = data.NUMLOC
             estpos = data.ESTPOS
             postra = data.POSTRA
+            numlocSup = self.db_connection.query_numlocsup(estpos, postra)
             email_supervisor = [self.db_connection.query_mailsup(estpos, postra)]
             nome_supervisor = self.db_connection.query_nomesup(estpos, postra)
-            self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"]  # Email lista mensal
-            self.emailToday = ["gestaodepessoas@fgmdentalgroup.com", "grupo.coordenadores@fgmdentalgroup.com", "grupo.supervisores@fgmdentalgroup.com", "grupo.gerentes@fgmdentalgroup.com"]  # Email aniversário diário
+            self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"]
+            self.emailToday = ["gestaodepessoas@fgmdentalgroup.com", "grupo.coordenadores@fgmdentalgroup.com", "grupo.supervisores@fgmdentalgroup.com", "grupo.gerentes@fgmdentalgroup.com"]
 
-            if nome_supervisor:
+            if nome_supervisor and numlocSup == numloc:
                 if nome_supervisor not in self.supervisores:
                     self.supervisores[nome_supervisor] = {"funcionarios": [], "email": email_supervisor}
                 self.supervisores[nome_supervisor]["funcionarios"].append((nome_funcionario, mes_nascimento, dia_mes_nascimento, local))
+            print(self.supervisores)
         except Exception as e:
             logging.error("Error processing user data: %s", e)
+
+
     def _format_name(self, name):
         return ' '.join([word.capitalize() for word in name.split()]) if name else ""
 
@@ -102,22 +107,22 @@ class Manager:
                     
     def _send_birthday_today_mail(self, aniversariantes, data_aniversario,ano):
         if  '29/02' in data_aniversario and ano != 'bissexto' and self.hoje == '27/02':
-            email_morning = self.emailToday       #---------------------PRD-----------------------------
+            # email_morning = self.emailToday       #---------------------PRD-----------------------------
             # email_morning = self.email_teste    #---------------------QAS-----------------------------
             subject = f'Aniversariantes do dia'
             body = self._generate_dayling_email_body(aniversariantes,ano)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
-            self._send_email(email_morning, subject, body)
+            # self._send_email(email_morning, subject, body)
         elif  self.hoje in data_aniversario :
-            email_morning = self.emailToday       #---------------------PRD-----------------------------
+            # email_morning = self.emailToday       #---------------------PRD-----------------------------
             # email_morning = self.email_teste    #---------------------QAS-----------------------------
             subject = f'Aniversariantes do dia'
             body = self._generate_dayling_email_body(aniversariantes,ano)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
             print("Email Aniversário Diário")
-            self._send_email(email_morning, subject, body)
+            # self._send_email(email_morning, subject, body)
         else: 
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info("Sem aniversáriantes no dia!")       
@@ -129,14 +134,14 @@ class Manager:
         diaStart = (data_fixa.strftime("%d/%m"))
         hoje = datetime.now().strftime("%d/%m")
         if hoje == diaStart:
-            email_rh = self.email_rh_list  # ---------------------PRD-----------------------------
+            # email_rh = self.email_rh_list  # ---------------------PRD-----------------------------
             # email_rh = self.email_teste  # ---------------------QAS-----------------------------
             mes_seguinte = datetime.now() + relativedelta(months=1)
             mes_seguinte = mes_seguinte.strftime("%B").title()
             subject = f'Aniversariantes do mês de {mes_seguinte}'
             body = self._generate_rh_email_body(aniversariantes_mes,mes_seguinte)
-            logging.info(f'Lista de Aniversáriantes do Mes de {mes_seguinte} Enviada para {email_rh}')
-            self._send_email(email_rh, subject, body)
+            # logging.info(f'Lista de Aniversáriantes do Mes de {mes_seguinte} Enviada para {email_rh}')
+            # self._send_email(email_rh, subject, body)
 
 
     def _send_birth_superior_mail(self, aniversariantes_mes): 
@@ -149,7 +154,7 @@ class Manager:
         if hoje == diaStart:
             for supervisor, info in aniversariantes_mes.items(): 
                 count += 1
-                emailSupervisor = info["email"]       #---------------------PRD-----------------------------
+                # emailSupervisor = info["email"]       #---------------------PRD-----------------------------
                 # emailSupervisor = self.email_teste    #---------------------QAS-----------------------------
                 funcionarios = info["funcionarios"]     
                 mes_seguinte = datetime.now() + relativedelta(months=1)
@@ -158,7 +163,7 @@ class Manager:
                 body = self._generate_supervisor_email_body(supervisor, funcionarios,mes_seguinte) # Gera o corpo do e-mail 
                 logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_seguinte}')
                 print(f"Contagem: {count}")
-                self._send_email(emailSupervisor, subject, body) # Envia o e-mail
+                # self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     def _converter_data(self, data_str):
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
     
