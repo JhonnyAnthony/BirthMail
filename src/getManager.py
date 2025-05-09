@@ -23,6 +23,7 @@ class Manager:
         except Exception as e:
             logging.error("Error processing database results: %s", e)
 
+    
     def _process_user(self, data):
         try:
             self.situacao = data.SITAFA
@@ -36,14 +37,13 @@ class Manager:
             mes_nascimento = data_nascimento.strftime("%m")
             dia_mes_nascimento = data_nascimento.strftime("%d/%m")
             self.email_teste = ["jhonny.souza@fgmdentalgroup.com"]  
-            # Chamando as funções para obter os dados dos supervisores
+            
             estpos = data.ESTPOS
             postra = data.POSTRA
             email_supervisor = [self.db_connection.query_mailsup(estpos, postra)]
             nome_supervisor = self.db_connection.query_nomesup(estpos, postra)
-            self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"]  # Email lista mensal
-            self.emailToday = ["gestaodepessoas@fgmdentalgroup.com", "grupo.coordenadores@fgmdentalgroup.com", "grupo.supervisores@fgmdentalgroup.com", "grupo.gerentes@fgmdentalgroup.com"]  # Email aniversário diário
-
+            self.email_rh_list = ["gestaodepessoas@fgmdentalgroup.com", "aline.mira@fgmdentalgroup.com"]
+            self.emailToday = ["gestaodepessoas@fgmdentalgroup.com", "grupo.coordenadores@fgmdentalgroup.com", "grupo.supervisores@fgmdentalgroup.com", "grupo.gerentes@fgmdentalgroup.com"]
             if nome_supervisor:
                 if nome_supervisor not in self.supervisores:
                     self.supervisores[nome_supervisor] = {"funcionarios": [], "email": email_supervisor}
@@ -61,8 +61,7 @@ class Manager:
                         "mes_nascimento": mes_nascimento,
                         "dia_mes_nascimento": dia_mes_nascimento,
                         "local": local
-                    })
-            
+                    })        
         except Exception as e:
             logging.error("Error processing user data: %s", e)
     def filtrar_aniversariantes_sem_superior(self):
@@ -155,7 +154,7 @@ class Manager:
             body = self._generate_dayling_email_body(aniversariantes,ano)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
-            # self._send_email(email_morning, subject, body)
+            self._send_email(email_morning, subject, body)
         elif  self.hoje in data_aniversario :
             # email_morning = self.emailToday       #---------------------PRD-----------------------------
             email_morning = self.email_teste    #---------------------QAS-----------------------------
@@ -164,7 +163,7 @@ class Manager:
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
             print("Email Aniversário Diário")
-            # self._send_email(email_morning, subject, body)
+            self._send_email(email_morning, subject, body)
         else: 
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info("Sem aniversáriantes no dia!")       
@@ -177,7 +176,7 @@ class Manager:
             body = self._generate_dayling_email_body(aniversariantes_sem_sup,ano)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
-            # self._send_email(email_morning, subject, body)
+            self._send_email(email_morning, subject, body)
         elif  self.hoje in data_aniversario_sem_sup :
             # email_morning = self.emailToday       #---------------------PRD-----------------------------
             email_morning = self.email_teste    #---------------------QAS-----------------------------
@@ -186,7 +185,7 @@ class Manager:
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
             print("Email Aniversário Diário")
-            # self._send_email(email_morning, subject, body)
+            self._send_email(email_morning, subject, body)
         else: 
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info("Sem aniversáriantes no dia!")       
@@ -227,7 +226,7 @@ class Manager:
                 body = self._generate_supervisor_email_body(supervisor, funcionarios) # Gera o corpo do e-mail 
                 logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_atual}')
                 print(f"Contagem: {count}")
-                # self._send_email(emailSupervisor, subject, body) # Envia o e-mail
+                self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     def _converter_data(self, data_str):
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
     

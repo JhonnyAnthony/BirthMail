@@ -53,19 +53,15 @@ class TempoCasa:
 
         if nome_supervisor:
             if nome_supervisor not in self.supervisores:
-                self.supervisores[nome_supervisor] = {
-                    "funcionarios": [],
-                    "email": email_supervisor
-                }
+                self.supervisores[nome_supervisor] = {"funcionarios": [], "email": email_supervisor}
             self.supervisores[nome_supervisor]["funcionarios"].append({
                 "nome": nome,
                 "aniversario_empresa": aniversario_empresa,
                 "data_admissao": data_adm,
                 "mes_aniversario_empresa": mes_aniversario_empresa,
                 "situacao": situacao,
-                "setor": local  # Assuming 'local' is the sector
+                "setor": local  
             })
-        
         self.data[cpf]['matriculas'].append((data_adm, data_dem))
         self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
@@ -147,19 +143,20 @@ class TempoCasa:
 
 
     def _send_list_rh(self,anosLista, aniversario, nome):
-        email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
-        # email = [f"{info['email_pessoal']}", f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
-        subject = "Segue a lista de colaboradores que tem duas matriculas!"
-        body = self._generate_list_body(anosLista, aniversario, nome)
-        logging.info(f"Aniversáriantes da Empresa Enviada para {email}")
-        # self._send_email(email, subject, body)
+        if self.hoje in aniversario:
+            email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
+            # email = [f"{info['email_pessoal']}", f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            subject = "Segue a lista de colaboradores que tem duas matriculas!"
+            body = self._generate_list_body(anosLista, aniversario, nome)
+            logging.info(f"Aniversáriantes da Empresa Enviada para {email}")
+            self._send_email(email, subject, body)
 
     
     def _send_supervisor_mail(self, aniversariantes):
         count = 0
         hoje = datetime.now().strftime("%d/%m")
         mesStart = datetime.now().month
-        diaFixo = 11 
+        diaFixo = 12
         data_fixa = datetime(datetime.now().year, mesStart, diaFixo)
         diaStart = data_fixa.strftime("%d/%m")
         if hoje == diaStart:
@@ -175,7 +172,7 @@ class TempoCasa:
                     body = self._generate_supervisor_email_body(funcionarios, mes_seguinte, supervisor) # Gera o corpo do e-mail 
                     logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_seguinte}')
                     # print(f"Contagem: {count}")
-                    # self._send_email(emailSupervisor, subject, body) # Envia o e-mail
+                    self._send_email(emailSupervisor, subject, body) # Envia o e-mail
     
     def _send_mail_year(self, info, anos):
         if self.hoje in info['aniversario_empresa']:
@@ -196,13 +193,14 @@ class TempoCasa:
             subject = f"Parabéns pelos {anos} anos de FGM| {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             # print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")
-            # self._send_email(email, subject, body)
+            self._send_email(email, subject, body)
     def _generate_list_body(self,anosLista, aniversario, nome):
         body = f"<strong>Olá. Segue a lista de colaboradores que tem duas matriculas<br><br></strong>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
         body += """<tr style="background-color: #d3d3d3; color: black;"><th>Colaboradores Aniversáriantes</th><th>Data</th></tr>"""
 
         # Ordene os funcionários por data de aniversário
+        
         body += f"<tr><td>{nome}</td><td>{aniversario}</td></tr>"
         body += "</table><br>"
         body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
