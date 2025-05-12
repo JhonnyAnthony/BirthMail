@@ -12,7 +12,8 @@ class Manager:
         self.db_connection = Database()  # Inicializa a conexão com o banco de dados
         self.db_connection.connectData()  # Conecta ao banco de dados
         self.supervisores = {}  # Dicionário para armazenar supervisores e seus funcionários
-        locale.setlocale(locale.LC_TIME, 'pt_BR')  # Define a localidade para português do Brasil
+        # locale.setlocale(locale.LC_TIME, 'pt_BR')  # Define a localidade para português do Brasil
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')  # Define a localidade para português do Brasil
 
     def connectionDB(self):
         try:
