@@ -10,7 +10,8 @@ class TempoCasa:
         self.db_connection = Database()
         self.db_connection.connectData()
         self.data = {}
-        locale.setlocale(locale.LC_TIME, 'pt_BR')
+        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
 
     def connectionDB(self):
         db_results = self.db_connection.query_tempoCasa()
@@ -101,10 +102,11 @@ class TempoCasa:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
             # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
             subject = f"Parabéns pelos {anos} anos de Casa {info['nome'].title()}!"
-            body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth', None) #-----
+            body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
             self._send_email(email, subject, body)
-
+        else:
+            logging.info(f"Nenhum aniversárianteno: {self.hoje}")
     def _send_mail_star(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
@@ -113,6 +115,8 @@ class TempoCasa:
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")
             self._send_email(email, subject, body)
+        else:
+            logging.info(f"Nenhum aniversárianteno: {self.hoje}")
     def _generate_year_body(self,image_src, alt_text, link=None):
         if link:
             return f"""<html><br><body style="display: flex; justify-content: center; align-items: center;height: auto; margin: 0;">
