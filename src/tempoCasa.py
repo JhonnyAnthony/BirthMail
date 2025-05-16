@@ -101,8 +101,8 @@ class TempoCasa:
         if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
             # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
-            subject = f"Parabéns pelos {anos} anos de Casa {info['nome'].title()}!"
-            body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html') #-----
+            subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
+            body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth','https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/Geral/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
             self._send_email(email, subject, body)
         else:
@@ -111,7 +111,7 @@ class TempoCasa:
         if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
             # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
-            subject = f"Parabéns pelos {anos} anos de Casa {info['nome'].title()}!"
+            subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")
             self._send_email(email, subject, body)
@@ -169,6 +169,3 @@ class TempoCasa:
         }
         response = requests.post(url, data=data)
         return response.json().get('access_token')
-if __name__ == '__main__': 
-    start = TempoCasa()
-    start.connectionDB()
