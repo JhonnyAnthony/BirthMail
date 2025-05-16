@@ -99,8 +99,8 @@ class TempoCasa:
 
     def _send_mail_year(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
-            email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
-            # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            # email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth','https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/Geral/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
@@ -109,8 +109,8 @@ class TempoCasa:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
     def _send_mail_star(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
-            email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
-            # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            # email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")

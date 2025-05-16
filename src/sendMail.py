@@ -63,8 +63,8 @@ class SendMail:
             self.email_corporativo = self.emailPessoal 
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
-            # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]  # ---------------------PRD-----------------------------
-            email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
+            email = [f"{self.email_corporativo}",f"{self.emailPessoal}"]  # ---------------------PRD-----------------------------
+            # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             subject = f'Seja Bem-Vindo(a) {self.nomeCompleto}!'
             body = self._generate_email_body(pictureNew, 'ImageWelcome')
             self._send_email(email,subject,body)
@@ -77,8 +77,8 @@ class SendMail:
             self.email_corporativo = self.emailPessoal
         if self.nomeUsuario not in seen and self.emailPessoal.strip():
             seen.add(self.nomeUsuario)
-            # email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
-            email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
+            email = [f"{self.email_corporativo}",f"{self.emailPessoal}"] # ---------------------PRD-----------------------------
+            # email = ["jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             seen.add(self.nomeUsuario)
             subject = f'Feliz Aniversário {self.nomeCompleto}!'
             body = self._generate_email_body(pictureBirth, 'ImageBirth', linkRedirect)
