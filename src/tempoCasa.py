@@ -41,7 +41,7 @@ class TempoCasa:
         self.data[cpf]['matriculas'].append((data_adm, data_dem))
         teste = self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
-        if data.SITAFA == 1:
+        if data.SITAFA != 7:
             self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario_empresa)
 
     def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa):
@@ -56,12 +56,24 @@ class TempoCasa:
         admissoes.sort(key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
         data_admissao_antiga = None
         data_demissao_antiga = None
+        lista_ignorados = []
+
+
         if len(admissoes) > 1:
-            data_admissao_antiga = datetime.strptime(admissoes[-2][0], "%d/%m/%Y").strftime("%d/%m/%Y")
-            data_demissao_antiga = datetime.strptime(admissoes[-2][1], "%d/%m/%Y").strftime("%d/%m/%Y")
-        # if anos in (5,10,15,20,25,30):
-        if anos > 1 and aniversario_empresa == self.hoje:
-            print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} | Data de Admissão: {data_adm}{' Data de Admissão Antiga: ' + data_admissao_antiga  if data_admissao_antiga  else ''}{' Data de Demissao Antiga: ' + data_demissao_antiga  if data_demissao_antiga  else ''}")
+            data_admissao_antiga = datetime.strptime(admissoes[-2][0], "%d/%m/%Y")
+            data_admissao_nova = datetime.strptime(admissoes[-1][0], "%d/%m/%Y")
+            data_demissao_antiga = datetime.strptime(admissoes[-2][1], "%d/%m/%Y")
+            diferenca_tempo = (data_admissao_nova - data_demissao_antiga)
+            if diferenca_tempo < timedelta(days=180):
+                data_admissao_antiga.strftime("%d/%m/%Y")
+                data_admissao_nova.strftime("%d/%m/%Y")
+                lista_ignorados.append((nome,aniversario_empresa))
+                # print(f"LISTA {lista_ignorados}")
+        if aniversario_empresa == "19/01" and (nome,aniversario_empresa) in lista_ignorados:
+            print("enviado")
+            self._send_mail_rh(nome,aniversario_empresa)
+        if anos > 1 and aniversario_empresa == self.hoje and nome not in lista_ignorados:
+            print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
             self._apply_filters(anos, self.data[cpf])
 
     def _apply_filters(self, anos, info):
@@ -96,7 +108,13 @@ class TempoCasa:
     def filtrar_aniversariantes(self, info, anos):
         print(f"Filtrando aniversariantes para {anos} anos")  # Adicione esta linha
         self._send_mail_year(info, anos)
-
+    def _send_mail_rh(self,nome,aniversario_empresa):
+            email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
+            # email = [f"vanessa.boing@fgmdentalgroup.com"]  # ---------------------PRD-----------------------------
+            subject = f"Lista de aniversáriantes com duas matriculas"
+            body = self._generate_rh_mail(nome,aniversario_empresa) #-----
+            logging.info(f"Lista enviada para {email}")
+            self._send_email(email, subject, body)
     def _send_mail_year(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
             email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
@@ -104,7 +122,7 @@ class TempoCasa:
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth','https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/Geral/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
-            self._send_email(email, subject, body)
+            # self._send_email(email, subject, body)
         else:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
     def _send_mail_star(self, info, anos):
@@ -114,9 +132,19 @@ class TempoCasa:
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")
-            self._send_email(email, subject, body)
+            # self._send_email(email, subject, body)
         else:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
+
+    def _generate_rh_mail(self,nome,aniversario_empresa):
+        body = f"<strong>Olá Vanessa. Segue a lista de colaboradores que fazem aniversário hoje que tem duas matriculas:<br><br></strong>"
+        body += "<table border='1' cellpadding='5' cellspacing='0'>"
+        body += """<tr style="background-color: #d3d3d3; color: black;">
+                    <th>Colaboradores Aniversáriantes</th><th>Data</th></tr>""" 
+
+        body += f"""<tr><td>{nome}</td><td>{aniversario_empresa}</td></tr><br>"""
+        return body
+
     def _generate_year_body(self,image_src, alt_text, link=None):
         if link:
             return f"""<html><br><body style="display: flex; justify-content: center; align-items: center;height: auto; margin: 0;">
@@ -169,3 +197,5 @@ class TempoCasa:
         }
         response = requests.post(url, data=data)
         return response.json().get('access_token')
+start = TempoCasa()
+start.connectionDB()
