@@ -21,7 +21,8 @@ class TempoCasa:
     def _process_user(self, data):
         data_adm = self._parse_date(data.DATADM).strftime("%d/%m/%Y")
         aniversario_empresa = self._parse_date(data.DATADM).strftime("%d/%m")
-        data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") if data.DATAFA != datetime(1900, 12, 31) else datetime.now().strftime("%d/%m/%Y")
+        data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") 
+        # if data.DATAFA != datetime(1900, 12, 31) else datetime.now().strftime("%d/%m/%Y")
         cpf = data.NUMCPF
         
         self.hoje = datetime.now().strftime("%d/%m")
@@ -46,6 +47,7 @@ class TempoCasa:
 
     def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa):
         admissoes = self.data[cpf]['admissoes']
+        print(nome,admissoes)
         tempo_de_casa = self.calcular_tempo_de_casa(admissoes)
         data_atual = datetime.now()
         primeiro_dia_proximo_mes = (data_atual.replace(day=28) + timedelta(days=4)).replace(day=1)
@@ -64,16 +66,16 @@ class TempoCasa:
             data_admissao_nova = datetime.strptime(admissoes[-1][0], "%d/%m/%Y")
             data_demissao_antiga = datetime.strptime(admissoes[-2][1], "%d/%m/%Y")
             diferenca_tempo = (data_admissao_nova - data_demissao_antiga)
-            if diferenca_tempo < timedelta(days=180):
+            if diferenca_tempo < timedelta(days=180) or nome == ('RODRIGO DE OLIVEIRA LUIZ'):
                 data_admissao_antiga.strftime("%d/%m/%Y")
                 data_admissao_nova.strftime("%d/%m/%Y")
                 lista_ignorados.append((nome,aniversario_empresa))
                 # print(f"LISTA {lista_ignorados}")
-        if aniversario_empresa == "19/01" and (nome,aniversario_empresa) in lista_ignorados:
+        if aniversario_empresa == self.hoje and (nome,aniversario_empresa) in lista_ignorados:
             print("enviado")
-            self._send_mail_rh(nome,aniversario_empresa)
+            # self._send_mail_rh(nome,aniversario_empresa)
         if anos > 1 and aniversario_empresa == self.hoje and nome not in lista_ignorados:
-            print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
+            # print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
             self._apply_filters(anos, self.data[cpf])
 
     def _apply_filters(self, anos, info):
