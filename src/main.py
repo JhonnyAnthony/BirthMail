@@ -10,7 +10,7 @@ class BithMail:
     def __init__(self):
         self.db = Database()
         self.db.connectData()
-
+    @staticmethod
     def logs():
         nome_host = socket.gethostname()
         ip_local = socket.gethostbyname(nome_host)

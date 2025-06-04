@@ -47,7 +47,7 @@ class TempoCasa:
 
     def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa):
         admissoes = self.data[cpf]['admissoes']
-        print(nome,admissoes)
+        # print(nome,admissoes)
         tempo_de_casa = self.calcular_tempo_de_casa(admissoes)
         data_atual = datetime.now()
         primeiro_dia_proximo_mes = (data_atual.replace(day=28) + timedelta(days=4)).replace(day=1)
@@ -119,22 +119,22 @@ class TempoCasa:
             self._send_email(email, subject, body)
     def _send_mail_year(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
-            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
             # email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
+            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth','https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/Geral/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
-            # self._send_email(email, subject, body)
+            self._send_email(email, subject, body)
         else:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
     def _send_mail_star(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
-            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
             # email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
+            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")
-            # self._send_email(email, subject, body)
+            self._send_email(email, subject, body)
         else:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
 
@@ -199,5 +199,3 @@ class TempoCasa:
         }
         response = requests.post(url, data=data)
         return response.json().get('access_token')
-start = TempoCasa()
-start.connectionDB()
