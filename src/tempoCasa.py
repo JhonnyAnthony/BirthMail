@@ -72,10 +72,10 @@ class TempoCasa:
                 lista_ignorados.append((nome,aniversario_empresa))
                 # print(f"LISTA {lista_ignorados}")
         if aniversario_empresa == self.hoje and (nome,aniversario_empresa) in lista_ignorados:
-            print("enviado")
+            logging.info("Enviada lista de Duplicados")
             self._send_mail_rh(nome,aniversario_empresa)
-        if anos > 1 and aniversario_empresa == self.hoje and nome not in lista_ignorados:
-            # print(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
+        if anos > 1 and aniversario_empresa == self.hoje and (nome,aniversario_empresa) not in lista_ignorados:
+            logging.info(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
             self._apply_filters(anos, self.data[cpf])
 
     def _apply_filters(self, anos, info):
