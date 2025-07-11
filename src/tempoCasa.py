@@ -12,7 +12,6 @@ class TempoCasa:
         self.data = {}
         locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 
-
     def connectionDB(self):
         db_results = self.db_connection.query_tempoCasa()
         for data in db_results:
@@ -83,6 +82,7 @@ class TempoCasa:
 
         funcao = funcoes.get(anos, self.filtrar_aniversariantes)
         funcao(info, anos)
+   
     def calcular_tempo_de_casa(self, admissoes):
         admissoes.sort(key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
         if len(admissoes) > 1:
@@ -104,33 +104,37 @@ class TempoCasa:
             if data_admissao > datetime.now():
                 return timedelta(0)
             return datetime.now() - data_admissao
+  
     def _parse_date(self, date_str):
         return date_str if isinstance(date_str, datetime) else datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
     def filtrar_aniversariantes(self, info, anos):
         print(f"Filtrando aniversariantes para {anos} anos")  # Adicione esta linha
         self._send_mail_year(info, anos)
+    
     def _send_mail_rh(self,nome,aniversario_empresa):
-            # email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
-            email = [f"vanessa.boing@fgmdentalgroup.com"]  # ---------------------PRD-----------------------------
+            # email = [f"vanessa.boing@fgmdentalgroup.com"]  # ---------------------PRD-----------------------------
+            email = ["sophia.alberton@fgmdentalgroup.com","jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             subject = f"Lista de aniversáriantes com duas matriculas"
             body = self._generate_rh_mail(nome,aniversario_empresa) #-----
             logging.info(f"Lista enviada para {email}")
             self._send_email(email, subject, body)
+    
     def _send_mail_year(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
-            # email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
-            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            email = ["sophia.alberton@fgmdentalgroup.com","jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth','https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/Geral/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
             self._send_email(email, subject, body)
         else:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
+    
     def _send_mail_star(self, info, anos):
         if self.hoje == info['aniversario_empresa']:
-            # email = ["jhonny.souza@fgmdentalgroup.com"]  # ---------------------QAS-----------------------------
-            email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            # email = [f"{info['email_pessoal']}",f"{info['email_corporativo']}"]  # ---------------------PRD-----------------------------
+            email = ["sophia.alberton@fgmdentalgroup.com","jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body(f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos-estrela.jpg', 'ImageBirth', f'https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/{anos}%20anos/index.html')
             print(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}, {info['nome']}")

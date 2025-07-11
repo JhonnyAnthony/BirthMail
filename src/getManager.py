@@ -51,6 +51,7 @@ class Manager:
                 self.supervisores[nome_supervisor]["funcionarios"].append((nome_funcionario, mes_nascimento, dia_mes_nascimento, local))
         except Exception as e:
             logging.error("Error processing user data: %s", e)
+   
     def _format_name(self, name):
         return ' '.join([word.capitalize() for word in name.split()]) if name else ""
 
@@ -81,6 +82,7 @@ class Manager:
                         aniversariantes_mes[supervisor] = {"funcionarios": [], "email": info["email"]}
                     aniversariantes_mes[supervisor]["funcionarios"].append((funcionario, dia_mes_nascimento, local))
         return aniversariantes_mes
+    
     def filtrar_datas(self, aniversariantes):
         datas = []
         for supervisor, info in aniversariantes.items():
@@ -140,7 +142,6 @@ class Manager:
             logging.info(f'Lista de Aniversáriantes do Mes de {mes_seguinte} Enviada para {email_rh}')
             self._send_email(email_rh, subject, body)
 
-
     def _send_birth_superior_mail(self, aniversariantes_mes): 
         count = 0
         hoje = datetime.now().strftime("%d/%m")
@@ -161,6 +162,7 @@ class Manager:
                 logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_seguinte}')
                 print(f"Contagem: {count}")
                 self._send_email(emailSupervisor, subject, body) # Envia o e-mail
+   
     def _converter_data(self, data_str):
         return datetime.strptime(f"{data_str}/2024", "%d/%m/%Y")
     
@@ -185,7 +187,6 @@ class Manager:
         body += "</table><br>"
         body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
-
 
     def _generate_dayling_email_body(self, aniversariantes,ano):
         body = f"<strong>Olá Liderança. Segue a lista de colaboradores que fazem aniversário hoje:<br><br></strong>"
