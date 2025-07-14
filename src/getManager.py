@@ -96,8 +96,6 @@ class Manager:
         data_aniversario = self.filtrar_datas(aniversariantes)
         ano = datetime.now().year
         if ano % 4 == 0: ano = 'bissexto' #Verifica se o ano é bissexto
-        
-
 
         if aniversariantes:
             self._send_birthday_today_mail(aniversariantes, data_aniversario,ano)                  
