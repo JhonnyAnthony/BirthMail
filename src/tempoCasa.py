@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from connectionDB import Database
 from datetime import datetime, timedelta
 import locale
@@ -5,6 +6,7 @@ from config import client_secret, client_id, tenant_id, scope, email_from
 import requests
 import logging
 import json
+
 class TempoCasa:
     def __init__(self):
         self.db_connection = Database()
@@ -13,14 +15,21 @@ class TempoCasa:
         locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 
     def connectionDB(self):
-        db_results = self.db_connection.query_tempoCasa()
-        for data in db_results:
-            self._process_user(data)
+        try:
+            db_results = self.db_connection.query_tempoCasa()
+            for data in db_results:
+                self._process_user(data)
+        except Exception as e:
+            logging.error("Error processing database results: %s", e)
+
 
     def _process_user(self, data):
         data_adm = self._parse_date(data.DATADM).strftime("%d/%m/%Y")
         aniversario_empresa = self._parse_date(data.DATADM).strftime("%d/%m")
+        mes_aniversario = aniversario_empresa.stftime("%m")
+        print(mes_aniversario)
         data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") 
+        
         # if data.DATAFA != datetime(1900, 12, 31) else datetime.now().strftime("%d/%m/%Y")
         cpf = data.NUMCPF
         
@@ -33,6 +42,7 @@ class TempoCasa:
                 'data_admissao':data_adm,
                 'data_demissao':data_dem,
                 'aniversario_empresa': aniversario_empresa,
+                'mes_aniversario': mes_aniversario,
                 'email_pessoal': data.EMAPAR,
                 'email_corporativo': data.EMACOM,
                 'admissoes': []
@@ -112,6 +122,19 @@ class TempoCasa:
         print(f"Filtrando aniversariantes para {anos} anos")  # Adicione esta linha
         self._send_mail_year(info, anos)
     
+    # Filtra mes do aniversariante
+    def filtrar_aniversariantes_do_mes_seguinte(self):
+        aniversariantes_mes = {}
+        mes_seguinte = datetime.now() + relativedelta(months=1)
+        mes_seguinte = mes_seguinte.strftime("%m")
+        for supervisor, info in self.supervisores.items():
+            for funcionario, mes_nascimento, dia_mes_nascimento, local in info["funcionarios"]:
+                if mes_nascimento == mes_seguinte:
+                    if supervisor not in aniversariantes_mes:
+                        aniversariantes_mes[supervisor] = {"funcionarios": [], "email": info["email"]}
+                    aniversariantes_mes[supervisor]["funcionarios"].append((funcionario, dia_mes_nascimento, local))
+        return aniversariantes_mes
+     
     def _send_mail_rh(self,nome,aniversario_empresa):
             # email = [f"vanessa.boing@fgmdentalgroup.com"]  # ---------------------PRD-----------------------------
             email = ["sophia.alberton@fgmdentalgroup.com","jhonny.souza@fgmdentalgroup.com"] # ---------------------QAS-----------------------------
@@ -141,6 +164,10 @@ class TempoCasa:
             self._send_email(email, subject, body)
         else:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
+
+#  listagem mensal dos colaboradores que fazem aniversario de tempo de casa
+    def _send_list_mounth(self, info, nome):
+        pass
 
     def _generate_rh_mail(self,nome,aniversario_empresa):
         body = f"<strong>Olá Vanessa. Segue a lista de colaboradores que fazem aniversário hoje que tem duas matriculas:<br><br></strong>"
