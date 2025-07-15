@@ -26,7 +26,7 @@ class TempoCasa:
     def _process_user(self, data):
         data_adm = self._parse_date(data.DATADM).strftime("%d/%m/%Y")
         aniversario_empresa = self._parse_date(data.DATADM).strftime("%d/%m")
-        self.mes_aniversario = self._parse_date(data.DATADM).strftime("%m")
+        mes_aniversario = self._parse_date(data.DATADM).strftime("%m")
         # mes_aniversario = aniversario_empresa.strftime("%m")
         data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") 
         estpos = data.ESTPOS
@@ -51,7 +51,7 @@ class TempoCasa:
                 'data_admissao':data_adm,
                 'data_demissao':data_dem,
                 'aniversario_empresa': aniversario_empresa,
-                # 'mes_aniversario': mes_aniversario,
+                'mes_aniversario': mes_aniversario,
                 'email_pessoal': data.EMAPAR,
                 'email_corporativo': data.EMACOM,
                 'admissoes': []
@@ -62,7 +62,7 @@ class TempoCasa:
         teste = self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
         if data.SITAFA != 7:
-            self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario_empresa)
+            self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario_empresa,mes_aniversario)
 
     def calcular_tempo_de_casa(self, admissoes):
         admissoes.sort(key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
@@ -86,7 +86,7 @@ class TempoCasa:
                 return timedelta(0)
             return datetime.now() - data_admissao
         
-    def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa):
+    def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa,mes_aniversario):
         admissoes = self.data[cpf]['admissoes']
         # print(nome,admissoes)
         tempo_de_casa = self.calcular_tempo_de_casa(admissoes)
@@ -119,7 +119,7 @@ class TempoCasa:
         # if anos > 1 and aniversario_empresa == self.hoje and (nome,aniversario_empresa) not in lista_ignorados:
         #     logging.info(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
         #     self._apply_filters(anos, self.data[cpf])
-        if anos > 1 and mes_seguintes == self.mes_aniversario and (nome, aniversario_empresa) not in lista_ignorados:
+        if anos > 1 and mes_seguintes == mes_aniversario and (nome, aniversario_empresa) not in lista_ignorados:
             logging.info(f"Lista de aniversáriantes de tempo de empresa {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
             self._apply_filters(anos, mes_seguintes, self.data[cpf])
             # print(nome, aniversario_empresa)
@@ -174,68 +174,59 @@ class TempoCasa:
         (aniversário de admissão) no PRÓXIMO mês, organizando-os por supervisor.
         """
     
-        nome_aniversario = info['nome']
-        data_aniversario = info['aniversario_empresa']
-        mes_aniversario = self.mes_aniversario
+
         email = self.emailToday
         # test = int(info['mes_aniversario']+1)
         nome_mes_seguinte = self.mes_seguinte.strftime("%B").title()
         # print(mes_seguinte)
         
         # print(mes_aniversario)
-        if mes_seguintes == mes_aniversario:
+        if mes_seguintes == info['mes_aniversario']:
             self.send_mail_list(
-                                nome_aniversario,
-                                data_aniversario,
                                 mes_seguintes,
                                 nome_mes_seguinte,
-                                mes_aniversario,
                                 email,
-                                anos)
+                                anos,
+                                info)
             # print(nome_aniversario)
         else: 
             print("ninguem")
     
+
     
-    
-    #filtra datas dos aniversariantes
-    def filtrar_datas(self, aniversariantes):
-        datas = []
-        for supervisor, info in aniversariantes.items():
-            for funcionario in info["funcionarios"]:
-                datas.append(funcionario[1])  # Adiciona a data de aniversário
-        return datas
-    
-    def send_mail_list(self,nome_aniversario,
-                            data_aniversario,
-                            mes_seguintes,
-                            nome_mes_seguinte,
-                            mes_aniversario,
-                            email,
-                            anos):
+    def send_mail_list(self,mes_seguintes,
+                                nome_mes_seguinte,
+                                email,
+                                anos,
+                                info):
             subject = f'Aniversariantes do mês de {nome_mes_seguinte}'
             email = email # ---------------------QAS-----------------------------
             # subject = f'Aniversariantes do mês de {mes_seguinte}'
-            body = self._generate_list_mail(nome_aniversario, data_aniversario, anos, nome_mes_seguinte) #-----
+            body = self._generate_list_mail(info, nome_mes_seguinte,anos) #-----
             logging.info(f"Lista enviada para {email}")
             self._send_email(email, subject, body)
                                 
-    def _generate_list_mail(self,nome_aniversario, data_aniversario,anos, nome_mes_seguinte):
-        body = f"<strong>Bom dia, Segue a lista de colaboradores que fazem aniversário no mes de {nome_mes_seguinte}:<br><br></strong>"
+    def _generate_list_mail(self, info, nome_mes_seguinte,anos):
+        body = f"<strong>Bom dia,</strong><br>Segue a lista de colaboradores que fazem aniversário no mês de {nome_mes_seguinte}:<br><br>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
-        body += """<tr style="background-color: #d3d3d3; color: black;">
-                    <th>Colaboradores Aniversáriantes</th>
-                    <th>Data</th>
-                    <th>Anos de Empresa</th>
-                    </tr>"""
-        
-        # Colete todos os aniversariantes em uma única lista
-        body += f"<tr><td>{nome_aniversario}</td><td>{data_aniversario}</td><td>{anos}</td></tr>"
-        
-        body += "</table><br>"
-        body += "Atenciosamente,<br>Equipe de Gestão de Pessoas"
+        body += """
+            <tr style="background-color: #d3d3d3; color: black;">
+                <th>Colaboradores Aniversariantes</th>
+                <th>Data</th>
+                <th>Anos de Empresa</th>
+            </tr>
+        """
+
+        for colaborador in info:
+            print(type(info))
+            nome = info['nome']
+            data = info['aniversario_empresa']
+            anos = anos 
+            body += f"<tr><td>{nome}</td><td>{data}</td><td>{anos}</td></tr>"
+
+        body += "</table><br>Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
-    
+
     
     def _send_mail_rh(self,nome,aniversario_empresa):
             # email = [f"vanessa.boing@fgmdentalgroup.com"]  # ---------------------PRD-----------------------------
