@@ -40,9 +40,9 @@ class BithMail:
 if __name__ == "__main__":
     # start = SendMail()
     # start.send_birthday_emails()
-    # start = TempoCasa()
-    # start.connectionDB()
-    manager = Manager()
-    manager.connectionDB()
-    manager.birthMonth()
+    start = TempoCasa()
+    start.connectionDB()
+    # manager = Manager()
+    # manager.connectionDB()
+    # manager.birthMonth()
     

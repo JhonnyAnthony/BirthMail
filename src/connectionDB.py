@@ -117,6 +117,8 @@ class Database:
                     EM.EMACOM AS EMACOM,
                     CAR.TITCAR AS TITCAR,
                     ORN.NOMLOC AS NOMLOCAL,
+                    FUN.ESTPOS AS ESTPOS,  -- Adicionando a coluna ESTPOS
+                    FUN.POSTRA AS POSTRA,  -- Adicionando a coluna POSTRA
                     ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.SITAFA) AS RN
                 FROM
                     senior.R034FUN FUN
@@ -183,6 +185,7 @@ class Database:
         finally:
             if self.cursor:
                 self.cursor.close()
+            
     # def query_situacaosup(self, ESTPOS, POSTRA):
     #     if self.connection is None:
     #         logging.error("No database connection established.")
