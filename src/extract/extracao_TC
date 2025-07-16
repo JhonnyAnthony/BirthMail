@@ -1,0 +1,36 @@
+class extracao_TC:
+    def _process_user(self, data,lista_aniversario):
+            data_adm = self._parse_date(data.DATADM).strftime("%d/%m/%Y")
+            aniversario_empresa = self._parse_date(data.DATADM).strftime("%d/%m")
+            mes_aniversario = self._parse_date(data.DATADM).strftime("%m")
+            data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") 
+            estpos = data.ESTPOS
+            postra = data.POSTRA
+            email_supervisor = [self.db_connection.query_mailsup(estpos, postra)]
+            self.nome_supervisor = self.db_connection.query_nomesup(estpos, postra)
+            self.emailToday = ["sophia.alberton@fgmdentalgroup.com", "jhonny.souza@fgmdentalgroup.com"]  # Email aniversário diário
+
+            cpf = data.NUMCPF        
+            self.mes_seguinte = datetime.now() + relativedelta(months=1)
+            self.hoje = datetime.now().strftime("%d/%m")
+                                  
+            if cpf not in self.data:
+                self.data[cpf] = {
+                    'nome': data.NOMFUN,
+                    'situacao': data.SITAFA,
+                    'matriculas': [],
+                    'data_admissao':data_adm,
+                    'data_demissao':data_dem,
+                    'aniversario_empresa': aniversario_empresa,
+                    'mes_aniversario': mes_aniversario,
+                    'email_pessoal': data.EMAPAR,
+                    'email_corporativo': data.EMACOM,
+                    'admissoes': []
+                }
+            
+
+            self.data[cpf]['matriculas'].append((data_adm, data_dem))
+            teste = self.data[cpf]['admissoes'].append((data_adm, data_dem))
+
+            if data.SITAFA != 7:
+                self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario_empresa,mes_aniversario,lista_aniversario)

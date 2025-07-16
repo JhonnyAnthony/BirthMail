@@ -23,8 +23,6 @@ class TempoCasa:
                 self._process_user(data, lista_aniversario)
             nome_mes_seguinte = self.mes_seguinte.strftime("%B").title()
             self.send_mail_list(lista_aniversario,nome_mes_seguinte)
-
-
         except Exception as e:
             logging.error("Error processing database results: %s", e)
 
@@ -34,10 +32,10 @@ class TempoCasa:
         mes_aniversario = self._parse_date(data.DATADM).strftime("%m")
         # mes_aniversario = aniversario_empresa.strftime("%m")
         data_dem = self._parse_date(data.DATAFA).strftime("%d/%m/%Y") 
-        estpos = data.ESTPOS
-        postra = data.POSTRA
-        email_supervisor = [self.db_connection.query_mailsup(estpos, postra)]
-        self.nome_supervisor = self.db_connection.query_nomesup(estpos, postra)
+        # estpos = data.ESTPOS
+        # postra = data.POSTRA
+        # email_supervisor = [self.db_connection.query_mailsup(estpos, postra)]
+        # self.nome_supervisor = self.db_connection.query_nomesup(estpos, postra)
         # self.emailToday = ["gestaodepessoas@fgmdentalgroup.com", "grupo.coordenadores@fgmdentalgroup.com", "grupo.supervisores@fgmdentalgroup.com", "grupo.gerentes@fgmdentalgroup.com"]  # Email aniversário diário
         self.emailToday = ["sophia.alberton@fgmdentalgroup.com", "jhonny.souza@fgmdentalgroup.com"]  # Email aniversário diário
 
@@ -45,8 +43,6 @@ class TempoCasa:
         cpf = data.NUMCPF        
         self.mes_seguinte = datetime.now() + relativedelta(months=1)
         self.hoje = datetime.now().strftime("%d/%m")
-        
-        
         
         if cpf not in self.data:
             self.data[cpf] = {
@@ -61,8 +57,6 @@ class TempoCasa:
                 'email_corporativo': data.EMACOM,
                 'admissoes': []
             }
-        
-
         self.data[cpf]['matriculas'].append((data_adm, data_dem))
         teste = self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
@@ -143,11 +137,6 @@ class TempoCasa:
         
         self._send_mail_year(info, anos)  
     
-    # def filtrar_admitidos_no_proximo_mes(self, lista_aniversario):
-    #     email = self.emailToday
-    #     print(lista_aniversario)
-        
-    
     def send_mail_list(self,lista_aniversario,nome_mes_seguinte):
             subject = f'Aniversariantes do mês de {nome_mes_seguinte}'
             email = self.emailToday # ---------------------QAS-----------------------------
@@ -156,8 +145,8 @@ class TempoCasa:
             self._send_email(email, subject, body)
             # self.filtrar_admitidos_no_proximo_mes(lista_aniversario, nome_mes_seguinte)
                                 
-    def _generate_list_mail(self, lista_aniversariantes,nome_mes_seguinte):
-        body = f"<strong>Bom dia,</strong><br>Segue a lista de colaboradores que fazem aniversário no mês de {nome_mes_seguinte}:<br><br>"
+    def _generate_list_mail(self, lista_aniversario,nome_mes_seguinte):
+        body = f"<strong>Bom dia,</strong><br>Segue a lista de colaboradores que fazem aniversário de empresa no mês de {nome_mes_seguinte}:<br><br>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
         body += """
             <tr style="background-color: #d3d3d3; color: black;">
@@ -166,8 +155,9 @@ class TempoCasa:
                 <th>Anos de Empresa</th>
             </tr>
         """
+        
         # print(lista_aniversariantes)
-        for nome,data,anos in lista_aniversariantes:
+        for nome,data,anos in lista_aniversario:
             body += f"<tr><td>{nome}</td><td>{data}</td><td>{anos}</td></tr>"
 
         body += "</table><br>Atenciosamente,<br>Equipe de Gestão de Pessoas"
@@ -260,9 +250,7 @@ class TempoCasa:
         if aniversariantes:
             self._send_birthday_today_mail(aniversariantes, data_aniversario,ano)                  
             self._send_mail_rh(aniversariantes_mes)
-            self._send_birth_superior_mail(aniversariantes_mes)
-            # self.send_mail_list(aniversariantes_mes)
-      #pass 
+            self._send_birth_superior_mail(aniversariantes_mes) 
     
     def _generate_dayling_email_body(self, aniversariantes,ano):
         body = f"<strong>Olá Liderança. Segue a lista de colaboradores que fazem aniversário de tempo de casa este mês:<br><br></strong>"
