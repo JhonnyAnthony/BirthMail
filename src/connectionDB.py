@@ -117,6 +117,8 @@ class Database:
                     EM.EMACOM AS EMACOM,
                     CAR.TITCAR AS TITCAR,
                     ORN.NOMLOC AS NOMLOCAL,
+                    FUN.ESTPOS AS ESTPOS,  -- Adicionando a coluna ESTPOS
+                    FUN.POSTRA AS POSTRA,  -- Adicionando a coluna POSTRA
                     ROW_NUMBER() OVER (PARTITION BY FUN.NUMCAD ORDER BY FUN.SITAFA) AS RN
                 FROM
                     senior.R034FUN FUN
@@ -183,13 +185,15 @@ class Database:
         finally:
             if self.cursor:
                 self.cursor.close()
+               
+    """        
     # def query_situacaosup(self, ESTPOS, POSTRA):
     #     if self.connection is None:
     #         logging.error("No database connection established.")
     #         return None
     #     try:
     #         self.cursor = self.connection.cursor()
-    #         self.cursor.execute("""
+    #         self.cursor.execute(
     #             SELECT 
     #                 K.SITAFA
     #             FROM senior.R034FUN K
@@ -210,7 +214,7 @@ class Database:
     #                         AND ROWNUM <= 1
     #                     )
     #                 )
-    #         """, estpos=ESTPOS, postra=POSTRA)
+    #         , estpos=ESTPOS, postra=POSTRA)
     #         row = self.cursor.fetchone()
     #         return row[0] if row else None
     #     except oracledb.DatabaseError as e:
@@ -218,7 +222,8 @@ class Database:
     #     finally:
     #         if self.cursor:
     #             self.cursor.close()
-        
+       """
+       
     def query_mailsup(self, ESTPOS, POSTRA):
         if self.connection is None:
             logging.error("No database connection established.")
