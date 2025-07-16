@@ -21,7 +21,9 @@ class TempoCasa:
             lista_aniversario = []
             for data in db_results:
                 self._process_user(data, lista_aniversario)
-            # self.filtrar_admitidos_no_proximo_mes(lista_aniversario)
+            nome_mes_seguinte = self.mes_seguinte.strftime("%B").title()
+            self.send_mail_list(lista_aniversario,nome_mes_seguinte)
+
 
         except Exception as e:
             logging.error("Error processing database results: %s", e)
@@ -125,7 +127,7 @@ class TempoCasa:
         if anos > 1 and mes_seguintes == mes_aniversario and (nome, aniversario_empresa) not in lista_ignorados:
             # logging.info(f"Lista de aniversáriantes de tempo de empresa {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
             lista_aniversario.append((nome,aniversario_empresa,anos))
-            self.send_mail_list(lista_aniversario,nome_mes_seguinte)
+            # self.send_mail_list(lista_aniversario,nome_mes_seguinte)
                         
     def _apply_filters(self, anos, mes_seguintes, info):
         funcoes = {key: self._send_mail_star for key in (5, 10, 15, 20, 25, 30)}
