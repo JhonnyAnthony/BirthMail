@@ -18,12 +18,15 @@ class TempoCasa:
     def connectionDB(self):
         try:
             db_results = self.db_connection.query_tempoCasa()
+            lista_aniversario = []
             for data in db_results:
-                self._process_user(data)
+                self._process_user(data, lista_aniversario)
+            self.filtrar_admitidos_no_proximo_mes(lista_aniversario)
+
         except Exception as e:
             logging.error("Error processing database results: %s", e)
 
-    def _process_user(self, data):
+    def _process_user(self, data,lista_aniversario):
         data_adm = self._parse_date(data.DATADM).strftime("%d/%m/%Y")
         aniversario_empresa = self._parse_date(data.DATADM).strftime("%d/%m")
         mes_aniversario = self._parse_date(data.DATADM).strftime("%m")
@@ -62,7 +65,7 @@ class TempoCasa:
         teste = self.data[cpf]['admissoes'].append((data_adm, data_dem))
 
         if data.SITAFA != 7:
-            self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario_empresa,mes_aniversario)
+            self._check_anniversary(cpf, data.NOMFUN, data_adm,aniversario_empresa,mes_aniversario,lista_aniversario)
 
     def calcular_tempo_de_casa(self, admissoes):
         admissoes.sort(key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
@@ -86,7 +89,7 @@ class TempoCasa:
                 return timedelta(0)
             return datetime.now() - data_admissao
         
-    def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa,mes_aniversario):
+    def _check_anniversary(self, cpf, nome, data_adm,aniversario_empresa,mes_aniversario,lista_aniversario):
         admissoes = self.data[cpf]['admissoes']
         # print(nome,admissoes)
         tempo_de_casa = self.calcular_tempo_de_casa(admissoes)
@@ -100,9 +103,9 @@ class TempoCasa:
         data_admissao_antiga = None
         data_demissao_antiga = None
         lista_ignorados = []
+        nome_mes_seguinte = self.mes_seguinte.strftime("%B").title()
 
         mes_seguintes = self.mes_seguinte.strftime("%m") 
-
         if len(admissoes) > 1:
             data_admissao_antiga = datetime.strptime(admissoes[-2][0], "%d/%m/%Y")
             data_admissao_nova = datetime.strptime(admissoes[-1][0], "%d/%m/%Y")
@@ -120,93 +123,37 @@ class TempoCasa:
         #     logging.info(f"Aniversário de empresa de {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
         #     self._apply_filters(anos, self.data[cpf])
         if anos > 1 and mes_seguintes == mes_aniversario and (nome, aniversario_empresa) not in lista_ignorados:
-            logging.info(f"Lista de aniversáriantes de tempo de empresa {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
-            self._apply_filters(anos, mes_seguintes, self.data[cpf])
-            # print(nome, aniversario_empresa)
-            
-            
-            
+            # logging.info(f"Lista de aniversáriantes de tempo de empresa {nome.upper()} de {anos} {'anos' if anos > 1 else 'ano'} e {meses} {'meses' if meses > 1 else 'mês'} ")
+            lista_aniversario.append((nome,aniversario_empresa,anos))
+            self.send_mail_list(lista_aniversario,nome_mes_seguinte)
+                        
     def _apply_filters(self, anos, mes_seguintes, info):
         funcoes = {key: self._send_mail_star for key in (5, 10, 15, 20, 25, 30)}
         
-        filtrar_mes = self.filtrar_admitidos_no_proximo_mes(info, anos, mes_seguintes)
-        
         funcao = funcoes.get(anos, self.filtrar_aniversariantes)
-        funcao(info, anos)
-        
-        
+        funcao(info, anos)                
      
     def _parse_date(self, date_str):
         return date_str if isinstance(date_str, datetime) else datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
     def filtrar_aniversariantes(self, info, anos):
         print(f"Filtrando aniversariantes de {anos} anos")  # Adicione esta linha
-        self._send_mail_year(info, anos)
+        self._send_mail_year(info, anos)  
     
-    #Filtra funcionarios que vao completar aniversario de tempo de empresa
-    def filtrar_admitidos_do_dia(self):
-        # Identifica e agrupa funcionários que completam seu "tempo de empresa"
-        # (aniversário de admissão) no mês atual, organizando-os por supervisor.
-        # Dicionário para armazenar os resultados (supervisores e seus funcionários)
-        funcionarios_com_tempo_de_empresa = {}
-        # Obtém o mês atual como string de dois dígitos (ex: "07" para Julho)
-        mes_atual = datetime.now().strftime("%m")
-        # Itera sobre cada supervisor e suas informações (email e lista de funcionários)
-        for supervisor, info_supervisor in self.supervisores.items():
-            # Itera sobre cada funcionário na lista de funcionários do supervisor
-            # Note que 'mes_admissao' é a segunda informação da tupla do funcionário
-            for funcionario, mes_admissao, local in info_supervisor["funcionarios"]:
-                if mes_admissao == mes_atual: # Verifica se o mês de admissão do funcionário é igual ao mês atual
-                    if supervisor not in funcionarios_com_tempo_de_empresa:# Se o supervisor ainda não está no dicionário de resultados, adiciona-o
-
-                        funcionarios_com_tempo_de_empresa[supervisor] = {
-                            "funcionarios": [],
-                            "email": info_supervisor["email"] # Pega o email do supervisor
-                        }
-                    funcionarios_com_tempo_de_empresa[supervisor]["funcionarios"].append( # Adiciona o funcionário (nome, mês de admissão, local) à lista do supervisor
-                        (funcionario, mes_admissao, local)
-                    )
-        return funcionarios_com_tempo_de_empresa    
-    
-    def filtrar_admitidos_no_proximo_mes(self, info, anos, mes_seguintes):
-        """
-        Identifica e agrupa funcionários que completarão seu "tempo de empresa"
-        (aniversário de admissão) no PRÓXIMO mês, organizando-os por supervisor.
-        """
-    
-
+    def filtrar_admitidos_no_proximo_mes(self, lista_aniversario):
         email = self.emailToday
-        # test = int(info['mes_aniversario']+1)
-        nome_mes_seguinte = self.mes_seguinte.strftime("%B").title()
-        # print(mes_seguinte)
+        # print(lista_aniversario)
         
-        # print(mes_aniversario)
-        if mes_seguintes == info['mes_aniversario']:
-            self.send_mail_list(
-                                mes_seguintes,
-                                nome_mes_seguinte,
-                                email,
-                                anos,
-                                info)
-            # print(nome_aniversario)
-        else: 
-            print("ninguem")
     
-
-    
-    def send_mail_list(self,mes_seguintes,
-                                nome_mes_seguinte,
-                                email,
-                                anos,
-                                info):
+    def send_mail_list(self,lista_aniversario,nome_mes_seguinte):
             subject = f'Aniversariantes do mês de {nome_mes_seguinte}'
-            email = email # ---------------------QAS-----------------------------
-            # subject = f'Aniversariantes do mês de {mes_seguinte}'
-            body = self._generate_list_mail(info, nome_mes_seguinte,anos) #-----
+            email = self.emailToday # ---------------------QAS-----------------------------
+            body = self._generate_list_mail(lista_aniversario,nome_mes_seguinte) #-----
             logging.info(f"Lista enviada para {email}")
             self._send_email(email, subject, body)
+            # self.filtrar_admitidos_no_proximo_mes(lista_aniversario, nome_mes_seguinte)
                                 
-    def _generate_list_mail(self, info, nome_mes_seguinte,anos):
+    def _generate_list_mail(self, lista_aniversariantes,nome_mes_seguinte):
         body = f"<strong>Bom dia,</strong><br>Segue a lista de colaboradores que fazem aniversário no mês de {nome_mes_seguinte}:<br><br>"
         body += "<table border='1' cellpadding='5' cellspacing='0'>"
         body += """
@@ -216,17 +163,15 @@ class TempoCasa:
                 <th>Anos de Empresa</th>
             </tr>
         """
-
-        for colaborador in info:
-            print(type(info))
-            nome = info['nome']
-            data = info['aniversario_empresa']
-            anos = anos 
+        # print(lista_aniversariantes)
+        for lista in lista_aniversariantes:
+            nome = lista['nome']
+            data = lista['aniversario_empresa']
+            anos = lista['anos_empresa'] 
             body += f"<tr><td>{nome}</td><td>{data}</td><td>{anos}</td></tr>"
 
         body += "</table><br>Atenciosamente,<br>Equipe de Gestão de Pessoas"
         return body
-
     
     def _send_mail_rh(self,nome,aniversario_empresa):
             # email = [f"vanessa.boing@fgmdentalgroup.com"]  # ---------------------PRD-----------------------------
@@ -234,7 +179,7 @@ class TempoCasa:
             subject = f"Lista de aniversáriantes com duas matriculas"
             body = self._generate_rh_mail(nome,aniversario_empresa) #-----
             logging.info(f"Lista enviada para {email}")
-            # self._send_email(email, subject, body)
+            self._send_email(email, subject, body)
     
     #enviando email para o aniversariante
     def _send_mail_year(self, info, anos):
@@ -244,7 +189,7 @@ class TempoCasa:
             subject = f"Parabéns pelos {anos} anos de FGM - {info['nome'].title()}!"
             body = self._generate_year_body( f'https://fgmdentalgroup.com/wp-content/uploads/2025/02/{anos}-anos.jpg','ImageBirth','https://fgmdentalgroup.com/Endomarketing/Tempo%20de%20casa/Geral/index.html') #-----
             logging.info(f"Aniversáriantes da Empresa de {info['nome'].title()} Enviada para {email}")
-            # self._send_email(email, subject, body)
+            self._send_email(email, subject, body)
         else:
             logging.info(f"Nenhum aniversárianteno: {self.hoje}")
         
@@ -267,7 +212,7 @@ class TempoCasa:
             body = self._generate_dayling_email_body(aniversariantes,ano)
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
-            # self._send_email(email_morning, subject, body)
+            self._send_email(email_morning, subject, body)
         elif  self.hoje in data_aniversario :
             # email_morning = self.emailToday       #---------------------PRD-----------------------------
             email_morning = self.email_teste    #---------------------QAS-----------------------------
@@ -276,7 +221,7 @@ class TempoCasa:
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info(f'Lista de Aniversáriantes do dia Enviada')
             print("Email Aniversário Diário")
-            # self._send_email(email_morning, subject, body)
+            self._send_email(email_morning, subject, body)
         else: 
             logging.info(f"--------------Informações do Envio de Email--------------")
             logging.info("Sem aniversáriantes no dia!") 
@@ -300,7 +245,7 @@ class TempoCasa:
                 body = self._generate_supervisor_email_body(supervisor, funcionarios,mes_seguinte) # Gera o corpo do e-mail 
                 logging.info(f'Lista de Aniversáriantes de {supervisor} do mes de {mes_seguinte}')
                 print(f"Contagem: {count}")
-                # self._send_email(emailSupervisor, subject, body) # Envia o e-mail    
+                self._send_email(emailSupervisor, subject, body) # Envia o e-mail    
             
     # listagem mensal dos colaboradores que fazem aniversario de tempo de casa
     def _send_list_mounth(self):
@@ -316,6 +261,7 @@ class TempoCasa:
             self._send_birthday_today_mail(aniversariantes, data_aniversario,ano)                  
             self._send_mail_rh(aniversariantes_mes)
             self._send_birth_superior_mail(aniversariantes_mes)
+            # self.send_mail_list(aniversariantes_mes)
       #pass 
     
     def _generate_dayling_email_body(self, aniversariantes,ano):
