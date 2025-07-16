@@ -21,7 +21,7 @@ class TempoCasa:
             lista_aniversario = []
             for data in db_results:
                 self._process_user(data, lista_aniversario)
-            self.filtrar_admitidos_no_proximo_mes(lista_aniversario)
+            # self.filtrar_admitidos_no_proximo_mes(lista_aniversario)
 
         except Exception as e:
             logging.error("Error processing database results: %s", e)
@@ -138,11 +138,12 @@ class TempoCasa:
 
     def filtrar_aniversariantes(self, info, anos):
         print(f"Filtrando aniversariantes de {anos} anos")  # Adicione esta linha
+        
         self._send_mail_year(info, anos)  
     
-    def filtrar_admitidos_no_proximo_mes(self, lista_aniversario):
-        email = self.emailToday
-        # print(lista_aniversario)
+    # def filtrar_admitidos_no_proximo_mes(self, lista_aniversario):
+    #     email = self.emailToday
+    #     print(lista_aniversario)
         
     
     def send_mail_list(self,lista_aniversario,nome_mes_seguinte):
@@ -164,10 +165,7 @@ class TempoCasa:
             </tr>
         """
         # print(lista_aniversariantes)
-        for lista in lista_aniversariantes:
-            nome = lista['nome']
-            data = lista['aniversario_empresa']
-            anos = lista['anos_empresa'] 
+        for nome,data,anos in lista_aniversariantes:
             body += f"<tr><td>{nome}</td><td>{data}</td><td>{anos}</td></tr>"
 
         body += "</table><br>Atenciosamente,<br>Equipe de Gestão de Pessoas"
